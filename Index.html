@@ -38,14 +38,23 @@
     header {
       position: fixed; top: 0; left: 0; width: 100%; height: 80px;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0 40px; z-index: 100;
-      /* On garde le flou, mais le dégradé du Hero va aider à l'intégration */
-      background: rgba(5, 3, 10, 0.1); 
+      padding: 0 40px; 
+      z-index: 1000; /* Z-INDEX TRÈS HAUT POUR PASSER AU DESSUS DU FILM */
+      
+      background: rgba(5, 3, 10, 0.15); 
       backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-      transition: background 0.3s ease;
+      
+      transform: translateY(0);
+      transition: transform 0.5s cubic-bezier(0.33, 1, 0.68, 1), background 0.3s ease;
     }
+    
     header.scrolled { background: rgba(5, 3, 10, 0.95); }
+
+    /* CLASSE QUI CACHE LE HEADER VERS LE HAUT */
+    header.header-auto-hide {
+      transform: translateY(-100%);
+    }
 
     .header-left, .header-right { display: flex; align-items: center; gap: 15px; }
     .logo { display: flex; align-items: center; gap: 10px; }
@@ -68,6 +77,7 @@
     .btn-dev-primary { background: var(--accent); border-color: transparent; box-shadow: 0 0 15px rgba(168, 85, 247, 0.5); }
     .btn-dev-primary:hover { box-shadow: 0 0 25px rgba(168, 85, 247, 0.8); transform: translateY(-1px); }
 
+    /* SEARCH */
     .search-wrapper { position: relative; width: 280px; }
     .search-input {
       width: 100%; padding: 8px 34px 8px 14px; border-radius: 999px;
@@ -94,30 +104,57 @@
 
     /* --- HERO --- */
     .hero-container {
-      position: relative; width: 100%; height: 85vh;
+      position: relative; 
+      width: 100%; 
+      height: 85vh; 
       display: flex; align-items: flex-end; overflow: hidden; margin-bottom: 20px;
+      background: #000;
+      transition: height 0.8s ease;
     }
-    .hero-bg-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
-    .hero-bg-video video { width: 100%; height: 100%; object-fit: cover; }
     
-    /* === MODIFICATION ICI === : Le double dégradé (Haut et Bas) */
+    /* MODE CINEMA : PLEINE HAUTEUR */
+    .hero-container.playing-mode {
+      height: 100vh;
+      margin-bottom: 0;
+    }
+
+    .hero-bg-video { 
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+      z-index: 0; 
+    }
+    
+    .hero-bg-video video { 
+      width: 100%; height: 100%; 
+      object-fit: cover; 
+      transition: object-fit 0.5s ease;
+    }
+    
     .hero-overlay-gradient {
       position: absolute; inset: 0; z-index: 1; pointer-events: none;
       background: linear-gradient(
         to bottom,
-        var(--bg) 0%,            /* Haut : Fondu noir */
-        transparent 15%,         /* Vidéo visible */
-        transparent 80%,         /* Vidéo visible */
-        var(--bg) 100%           /* Bas : Fondu noir */
+        var(--bg) 0%, 
+        transparent 15%, 
+        transparent 80%, 
+        var(--bg) 100%
       );
+      transition: opacity 0.5s ease;
     }
     
+    /* En mode lecture, on cache le dégradé et le texte, mais PAS le header (géré par JS) */
+    .hero-container.playing-mode .hero-overlay-gradient,
+    .hero-container.playing-mode .hero-content {
+      opacity: 0 !important;
+      pointer-events: none;
+    }
+
     .hero-content {
       position: relative; z-index: 2; margin: 0 0 60px 60px; width: 100%; max-width: 600px;
       background: rgba(15, 20, 35, 0.35); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 24px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.5); opacity: 0; transform: translateY(20px);
       animation: heroContentFadeIn 0.8s ease forwards 0.5s;
+      transition: opacity 0.5s ease;
     }
     @keyframes heroContentFadeIn { to { opacity: 1; transform: translateY(0); } }
     
@@ -171,7 +208,7 @@
     }
     .section-title { font-size: 1.3rem; font-weight: 600; color: #fff; }
 
-    /* --- CARROUSEL --- */
+    /* CARROUSEL */
     .row-wrapper { position: relative; width: 100%; }
 
     .movie-row {
@@ -281,7 +318,7 @@
     </div>
   </header>
 
-  <div class="hero-container">
+  <div class="hero-container" id="heroContainer">
     <div class="hero-bg-video">
       <video id="heroTrailer" autoplay muted playsinline></video>
     </div>
@@ -429,6 +466,8 @@
       initHero();
       renderSections();
       updateAccountUI();
+      // On lance le minuteur du header tout de suite
+      resetHeaderTimer();
     }
 
     async function loadMovies() {
@@ -482,9 +521,11 @@
     const heroPlayBtn = document.getElementById("heroPlayBtn");
     const heroMoreBtn = document.getElementById("heroMoreBtn");
     const heroMuteBtn = document.getElementById("heroMuteBtn");
+    const heroContainer = document.getElementById("heroContainer");
     
     let trailerPool = [];
     let currentHeroIndex = 0;
+    let isMoviePlaying = false; 
 
     function initHero() {
       trailerPool = shuffle(movies.filter(movieHasPlayableVideo));
@@ -495,14 +536,70 @@
       }
       playHeroMovie(trailerPool[0]);
       
-      // ROTATION ALEATOIRE TRAILER
       heroVideo.onended = () => {
-        currentHeroIndex = (currentHeroIndex + 1) % trailerPool.length;
-        playHeroMovie(trailerPool[currentHeroIndex]);
+        if(isMoviePlaying) {
+            // FIN DU FILM : ON RETOURNE AU TRAILER
+            exitMovieMode();
+        } else {
+            // FIN DU TRAILER : ON PASSE AU SUIVANT
+            currentHeroIndex = (currentHeroIndex + 1) % trailerPool.length;
+            playHeroMovie(trailerPool[currentHeroIndex]);
+        }
       };
     }
 
+    // FONCTION POUR LANCER UN FILM (Mode Cinéma)
+    function enterMovieMode(url) {
+        isMoviePlaying = true;
+        
+        // Cache l'interface
+        heroContainer.classList.add('playing-mode');
+        document.body.classList.add('cinema-mode'); 
+        
+        // On force le header à remonter tout de suite
+        hideHeader();
+
+        // Setup Vidéo
+        heroVideo.src = url;
+        heroVideo.currentTime = 0;
+        heroVideo.muted = false;
+        heroVideo.controls = true;
+        heroVideo.style.objectFit = 'contain';
+        
+        heroVideo.play();
+        window.scrollTo({top:0, behavior:'smooth'});
+        
+        // Fullscreen auto
+        if(heroVideo.requestFullscreen) heroVideo.requestFullscreen();
+        else if(heroVideo.webkitRequestFullscreen) heroVideo.webkitRequestFullscreen();
+    }
+
+    // FONCTION POUR SORTIR DU MODE FILM
+    function exitMovieMode() {
+        isMoviePlaying = false;
+        
+        // Quitte le fullscreen si actif
+        if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+        
+        // Réaffiche l'interface
+        heroContainer.classList.remove('playing-mode');
+        document.body.classList.remove('cinema-mode');
+        
+        // Reset Vidéo en mode Trailer
+        heroVideo.controls = false;
+        heroVideo.style.objectFit = 'cover';
+        heroVideo.muted = true;
+        
+        // Reprend la boucle des trailers
+        playHeroMovie(trailerPool[currentHeroIndex]);
+        
+        // Réaffiche le header
+        showHeader();
+    }
+
     function playHeroMovie(movie) {
+      if(isMoviePlaying) return; 
+
       heroVideo.src = movie.trailerUrl || movie.videoUrl;
       heroVideo.muted = true;
       heroVideo.play().catch(()=>{});
@@ -512,10 +609,10 @@
       heroDesc.textContent = movie.description;
       heroMeta.innerHTML = `<span class="badge">${movie.year}</span><span class="badge">${movie.duration}</span><span class="badge">${(movie.genres||[]).slice(0,3).join(" • ")}</span>`;
       
+      // BOUTON LECTURE -> LANCE LE FILM COMPLET
       heroPlayBtn.onclick = () => {
-         heroVideo.currentTime = 0;
-         heroVideo.muted = false;
-         updateMuteIcon();
+         const movieUrl = movie.videoUrl || movie.trailerUrl;
+         enterMovieMode(movieUrl);
       };
       
       heroMoreBtn.onclick = () => openOverlay(movie);
@@ -530,11 +627,45 @@
       heroMuteBtn.textContent = heroVideo.muted ? "🔇" : "🔊";
     }
 
+    // --- LOGIQUE HEADER AUTO-HIDE ---
+    let headerTimeout;
+    const header = document.getElementById('mainHeader');
+    const searchInputEl = document.getElementById('searchInput');
+
+    function showHeader() {
+        header.classList.remove('header-auto-hide');
+    }
+
+    function hideHeader() {
+        // Ne pas cacher si on est focus sur la recherche ou si la souris est sur le header
+        if (document.activeElement === searchInputEl || header.matches(':hover')) return;
+        header.classList.add('header-auto-hide');
+    }
+
+    function resetHeaderTimer() {
+        showHeader();
+        clearTimeout(headerTimeout);
+        headerTimeout = setTimeout(hideHeader, 6000); // 6 secondes
+    }
+
+    // Détection globale du mouvement de souris
+    document.addEventListener('mousemove', () => {
+        // Fonctionne tout le temps, même pendant le film
+        resetHeaderTimer();
+    });
+
+    // Gestion du scroll pour le fond sombre
     window.addEventListener("scroll", () => {
-      const header = document.getElementById("mainHeader");
       if(window.scrollY > 50) header.classList.add("scrolled");
       else header.classList.remove("scrolled");
     });
+
+    // Exceptions pour le header
+    header.addEventListener('mouseenter', () => clearTimeout(headerTimeout));
+    header.addEventListener('mouseleave', resetHeaderTimer);
+    searchInputEl.addEventListener('focus', () => clearTimeout(headerTimeout));
+    searchInputEl.addEventListener('blur', resetHeaderTimer);
+
 
     const sectionsContainer = document.getElementById("sectionsContainer");
     function renderSections() {
@@ -574,9 +705,8 @@
       row.scrollBy({ left: amount, behavior: 'smooth' });
     };
 
-    const searchInput = document.getElementById("searchInput");
     const searchResults = document.getElementById("searchResults");
-    searchInput.addEventListener("input", (e) => {
+    searchInputEl.addEventListener("input", (e) => {
       const q = normalizeText(e.target.value);
       const cards = document.querySelectorAll(".movie-card");
       if(!q) {
@@ -615,7 +745,7 @@
       searchResults.classList.add("active");
     }
     document.addEventListener("click", (e) => {
-      if(!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+      if(!searchInputEl.contains(e.target) && !searchResults.contains(e.target)) {
         searchResults.classList.remove("active");
       }
     });
@@ -629,18 +759,16 @@
       document.getElementById("overlayMeta").textContent = `${m.year} • ${m.duration} • ${(m.genres||[]).join(", ")}`;
       
       document.getElementById("overlayWatchMovieBtn").onclick = () => {
-         heroVideo.src = m.videoUrl || m.trailerUrl;
-         heroVideo.currentTime = 0; heroVideo.muted = false; updateMuteIcon();
-         heroVideo.loop = false; heroVideo.play();
-         window.scrollTo({top:0, behavior:'smooth'});
+         const movieUrl = m.videoUrl || m.trailerUrl;
          closeAllOverlays();
+         enterMovieMode(movieUrl);
       };
+      
       document.getElementById("overlayWatchTrailerBtn").onclick = () => {
-         heroVideo.src = m.trailerUrl || m.videoUrl;
-         heroVideo.currentTime = 0; heroVideo.muted = false; updateMuteIcon();
-         heroVideo.play();
-         window.scrollTo({top:0, behavior:'smooth'});
+         const movieUrl = m.trailerUrl || m.videoUrl;
          closeAllOverlays();
+         // Pour le trailer, on lance aussi en mode cinéma pour bien voir
+         enterMovieMode(movieUrl);
       };
       const btnDel = document.getElementById("overlayDeleteBtn");
       if(isDev) {
