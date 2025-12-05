@@ -39,22 +39,16 @@
       position: fixed; top: 0; left: 0; width: 100%; height: 80px;
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 40px; 
-      z-index: 1000; /* Z-INDEX TRÈS HAUT POUR PASSER AU DESSUS DU FILM */
-      
+      z-index: 1000; 
       background: rgba(5, 3, 10, 0.15); 
       backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-      
       transform: translateY(0);
-      transition: transform 0.5s cubic-bezier(0.33, 1, 0.68, 1), background 0.3s ease;
+      transition: transform 0.4s ease-out, background 0.3s ease;
     }
     
     header.scrolled { background: rgba(5, 3, 10, 0.95); }
-
-    /* CLASSE QUI CACHE LE HEADER VERS LE HAUT */
-    header.header-auto-hide {
-      transform: translateY(-100%);
-    }
+    header.header-auto-hide { transform: translateY(-100%); }
 
     .header-left, .header-right { display: flex; align-items: center; gap: 15px; }
     .logo { display: flex; align-items: center; gap: 10px; }
@@ -104,46 +98,24 @@
 
     /* --- HERO --- */
     .hero-container {
-      position: relative; 
-      width: 100%; 
-      height: 85vh; 
+      position: relative; width: 100%; height: 85vh; 
       display: flex; align-items: flex-end; overflow: hidden; margin-bottom: 20px;
       background: #000;
       transition: height 0.8s ease;
     }
-    
-    /* MODE CINEMA : PLEINE HAUTEUR */
-    .hero-container.playing-mode {
-      height: 100vh;
-      margin-bottom: 0;
-    }
+    .hero-container.playing-mode { height: 100vh; margin-bottom: 0; }
 
-    .hero-bg-video { 
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-      z-index: 0; 
-    }
-    
-    .hero-bg-video video { 
-      width: 100%; height: 100%; 
-      object-fit: cover; 
-      transition: object-fit 0.5s ease;
-    }
+    .hero-bg-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+    .hero-bg-video video { width: 100%; height: 100%; object-fit: cover; transition: object-fit 0.5s ease; }
     
     .hero-overlay-gradient {
       position: absolute; inset: 0; z-index: 1; pointer-events: none;
-      background: linear-gradient(
-        to bottom,
-        var(--bg) 0%, 
-        transparent 15%, 
-        transparent 80%, 
-        var(--bg) 100%
-      );
+      background: linear-gradient(to bottom, var(--bg) 0%, transparent 15%, transparent 70%, var(--bg) 100%);
       transition: opacity 0.5s ease;
     }
     
-    /* En mode lecture, on cache le dégradé et le texte, mais PAS le header (géré par JS) */
-    .hero-container.playing-mode .hero-overlay-gradient,
-    .hero-container.playing-mode .hero-content {
+    .playing-mode .hero-overlay-gradient,
+    .playing-mode .hero-content {
       opacity: 0 !important;
       pointer-events: none;
     }
@@ -279,6 +251,17 @@
     .form-input { width: 100%; background: #27272a; border: 1px solid #3f3f46; color: #fff; padding: 10px; border-radius: 6px; margin-bottom: 10px; }
     .form-label { display: block; font-size: 0.8rem; margin-bottom: 4px; color: #a1a1aa; }
 
+    /* TOAST NOTIFICATION */
+    .toast {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+      background: rgba(168, 85, 247, 0.9); color: white;
+      padding: 10px 20px; border-radius: 99px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+      z-index: 1000; opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .toast.show { opacity: 1; }
+
     @media (max-width: 768px) {
       header { padding: 0 16px; }
       .search-wrapper { display: none; }
@@ -338,11 +321,13 @@
 
   <main id="sectionsContainer" class="main-content"></main>
 
+  <div id="toast" class="toast">Action effectuée</div>
+
   <div id="overlay" class="overlay-backdrop overlay-hidden">
     <div class="overlay-dialog">
       <button id="overlayClose" class="overlay-close">✕</button>
       <div class="overlay-layout">
-        <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche"></div>
+        <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche" onerror="this.src='https://via.placeholder.com/300x450?text=No+Poster'"></div>
         <div>
           <h2 id="overlayTitle" class="overlay-title">Titre</h2>
           <div id="overlayMeta" class="overlay-meta"></div>
@@ -350,6 +335,7 @@
           <p id="overlayDesc" class="overlay-desc">Description...</p>
           <div class="overlay-footer">
             <button class="btn-ghost hidden" id="overlayDeleteBtn" style="color:#f87171; border-color:rgba(248,113,113,0.3);">Supprimer</button>
+            <button class="btn-ghost hidden" id="overlayEditBtn" style="border-color:rgba(255,255,255,0.3);">Modifier</button>
             <button class="btn-ghost" id="overlayWatchTrailerBtn">Voir Trailer</button>
             <button class="btn-primary" id="overlayWatchMovieBtn">Regarder le film</button>
           </div>
@@ -366,19 +352,22 @@
         <button id="tabLogin" class="btn-primary" style="flex:1;">Connexion</button>
         <button id="tabRegister" class="btn-ghost" style="flex:1;">Inscription</button>
       </div>
+      
       <form id="loginForm">
-        <label class="form-label">Identifiant</label><input id="loginIdentifier" class="form-input" type="text" placeholder="Email ou pseudo">
-        <label class="form-label">Mot de passe</label><input id="loginPassword" class="form-input" type="password" placeholder="••••••">
+        <label class="form-label">Email</label><input id="loginIdentifier" class="form-input" type="email" required placeholder="exemple@mail.com">
+        <label class="form-label">Mot de passe</label><input id="loginPassword" class="form-input" type="password" required placeholder="••••••">
         <div id="loginError" style="color:#f87171; font-size:0.8rem; margin-top:5px; display:none;">Erreur d'identifiants</div>
         <button type="submit" class="btn-primary" style="width:100%; margin-top:15px;">Se connecter</button>
       </form>
+
       <form id="registerForm" class="hidden">
-        <label class="form-label">Nouvel Identifiant</label><input id="registerIdentifier" class="form-input" type="text">
-        <label class="form-label">Mot de passe</label><input id="registerPassword" class="form-input" type="password">
-        <label class="form-label">Confirmation</label><input id="registerPassword2" class="form-input" type="password">
+        <label class="form-label">Email</label><input id="registerIdentifier" class="form-input" type="email" required placeholder="exemple@mail.com">
+        <label class="form-label">Mot de passe (6 carac. min)</label><input id="registerPassword" class="form-input" type="password" required minlength="6">
+        <label class="form-label">Confirmation</label><input id="registerPassword2" class="form-input" type="password" required>
         <div id="registerError" style="color:#f87171; font-size:0.8rem; margin-top:5px; display:none;">Erreur</div>
         <button type="submit" class="btn-primary" style="width:100%; margin-top:15px;">Créer compte</button>
       </form>
+
       <div id="logoutSection" class="hidden" style="text-align:center; margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:20px;">
         <p style="margin-bottom:10px; color:#a1a1aa;">Connecté en tant que <strong id="currentUserLabel" style="color:#fff;"></strong></p>
         <button id="logoutBtn" class="btn-ghost" style="width:100%;">Se déconnecter</button>
@@ -405,7 +394,7 @@
         <div><label class="form-label">Description</label><textarea id="fieldDescription" class="form-input" style="min-height:80px;"></textarea></div>
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
           <button type="button" id="adminCancel" class="btn-ghost">Annuler</button>
-          <button type="submit" id="adminCreate" class="btn-primary">Ajouter</button>
+          <button type="submit" id="adminCreate" class="btn-primary">Enregistrer</button>
         </div>
       </form>
     </div>
@@ -418,7 +407,7 @@
       <form id="categoryForm" style="margin-bottom:20px;">
         <label class="form-label">Tag (ex: marvel)</label><input id="catKey" class="form-input" required>
         <label class="form-label">Titre affiché</label><input id="catLabel" class="form-input" required>
-        <div id="catError" style="color:#f87171; display:none;">Existe déjà.</div>
+        <div id="catError" style="color:#f87171; display:none;">Erreur d'ajout.</div>
         <button type="submit" class="btn-primary" style="width:100%; margin-top:10px;">Créer</button>
       </form>
       <div id="categoryList" style="border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;"></div>
@@ -426,9 +415,11 @@
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <script>
+    // --- CONFIGURATION FIREBASE ---
     const firebaseConfig = {
       apiKey: "AIzaSyAbfM7mh_uGhxXRRMewWNSY3_Fv3mjDJdI",
       authDomain: "neonstream-a1c6e.firebaseapp.com",
@@ -440,10 +431,11 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    const auth = firebase.auth();
 
-    const DEV_IDENT = "HerxingDEV01";
-    const DEV_PASS = "NEON-DEV-2025";
-    const STORAGE_KEY_CURRENT_USER = "neon_current_user";
+    // --- SÉCURITÉ ADMIN ---
+    // Remplace par ton email exact utilisé pour créer ton compte admin Firebase
+    const ADMIN_EMAILS = ["herxingapp@gmail.com"]; 
 
     const builtInCategories = [
       { key: "new", label: "Nouveautés" },
@@ -452,24 +444,45 @@
       { key: "thriller", label: "Thrillers" }
     ];
 
-    let movies = [], users = [], customCategories = [], currentUser = null, isDev = false;
+    let movies = [], customCategories = [];
+    let currentUserData = null; // Stocke l'objet user de Firebase
+    let isDev = false;
 
+    // --- UTILITAIRES ---
     function normalizeText(text) { return (text || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
     function slugify(str) { return normalizeText(str).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""); }
     function shuffle(array) { return [...array].sort(() => Math.random() - 0.5); }
     function movieHasPlayableVideo(m) { return !!(m.trailerUrl || m.videoUrl); }
 
-    async function initApp() {
-      await Promise.all([ loadMovies(), loadUsers(), loadCategories() ]);
-      loadCurrentUser();
-      updateDevStateFromUser();
-      initHero();
-      renderSections();
-      updateAccountUI();
-      // On lance le minuteur du header tout de suite
-      resetHeaderTimer();
+    // --- INITIALISATION ---
+    function initApp() {
+        // Écouteur d'état de connexion (C'est le cœur de la sécurité frontend)
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUserData = user;
+                // On vérifie si l'email correspond à la liste admin pour afficher l'UI
+                isDev = ADMIN_EMAILS.includes(user.email);
+                console.log("Connecté:", user.email, "Admin:", isDev);
+            } else {
+                currentUserData = null;
+                isDev = false;
+            }
+            updateAccountUI();
+            
+            // On recharge les films/catégories si nécessaire, ou on rafraichit juste l'affichage
+            if(movies.length === 0) {
+                await Promise.all([ loadMovies(), loadCategories() ]);
+                initHero();
+                renderSections();
+            } else {
+                renderSections(); // Pour mettre à jour les boutons d'édition si admin
+            }
+        });
+
+        resetHeaderTimer();
     }
 
+    // --- CHARGEMENT DONNÉES ---
     async function loadMovies() {
       movies = [];
       try {
@@ -479,41 +492,57 @@
           d._searchStr = normalizeText([d.title, (d.genres||[]).join(" "), (d.cast||[]).join(" "), d.year].join(" "));
           movies.push(d);
         });
-      } catch(e) { console.error(e); }
+      } catch(e) { console.error("Erreur chargement films:", e); }
     }
-    async function saveMovie(m) {
-      let toSave = {...m}; delete toSave._searchStr;
-      await db.collection("movies").doc(m.id).set(toSave);
-    }
-    async function deleteMovie(id) { await db.collection("movies").doc(id).delete(); }
 
-    async function loadUsers() {
-      users = [];
-      const snap = await db.collection("users").get();
-      snap.forEach(d => users.push(d.data()));
+    async function saveMovie(m) {
+        if(!isDev) return; // Sécurité UI
+        let toSave = {...m}; delete toSave._searchStr;
+        
+        try {
+            if(editingMovieId) {
+                await db.collection("movies").doc(editingMovieId).update(toSave);
+            } else {
+                await db.collection("movies").doc(m.id).set(toSave);
+            }
+            return true;
+        } catch(e) {
+            console.error("Erreur sauvegarde:", e);
+            alert("Erreur: Vous n'avez pas la permission (êtes-vous admin ?)");
+            return false;
+        }
     }
-    async function saveUser(u) { await db.collection("users").doc(u.identifier).set(u); }
+
+    async function deleteMovie(id) { 
+        try {
+            await db.collection("movies").doc(id).delete(); 
+            return true;
+        } catch(e) {
+            alert("Erreur suppression: Permission refusée.");
+            return false;
+        }
+    }
 
     async function loadCategories() {
       customCategories = [];
       const snap = await db.collection("categories").get();
       snap.forEach(d => customCategories.push(d.data()));
     }
-    async function saveCategory(c) { await db.collection("categories").doc(c.key).set(c); }
-    async function deleteCategory(k) { await db.collection("categories").doc(k).delete(); }
+    
+    async function saveCategory(c) { 
+        try { await db.collection("categories").doc(c.key).set(c); return true; } 
+        catch(e) { alert("Erreur ajout catégorie"); return false; }
+    }
+    
+    async function deleteCategory(k) { 
+        try { await db.collection("categories").doc(k).delete(); return true; }
+        catch(e) { alert("Erreur suppression"); return false; }
+    }
 
     function getAllCategories() { return [...builtInCategories, ...customCategories]; }
 
-    function loadCurrentUser() { currentUser = localStorage.getItem(STORAGE_KEY_CURRENT_USER); }
-    function setCurrentUser(id) {
-      currentUser = id;
-      if(id) localStorage.setItem(STORAGE_KEY_CURRENT_USER, id);
-      else localStorage.removeItem(STORAGE_KEY_CURRENT_USER);
-      updateDevStateFromUser();
-      updateAccountUI();
-    }
-    function updateDevStateFromUser() { isDev = (currentUser === DEV_IDENT); }
 
+    // --- HERO & LECTEUR VIDEO ---
     const heroVideo = document.getElementById("heroTrailer");
     const heroTitle = document.getElementById("heroTitle");
     const heroMeta = document.getElementById("heroMeta");
@@ -526,6 +555,32 @@
     let trailerPool = [];
     let currentHeroIndex = 0;
     let isMoviePlaying = false; 
+    let currentMovieId = null; 
+    let saveInterval = null;
+
+    // --- SAUVEGARDE PROGRESSION (SÉCURISÉE) ---
+    function saveWatchProgress(time) {
+      if(!currentUserData || !currentMovieId) return; 
+      
+      // On sauvegarde dans le document de l'utilisateur authentifié
+      const userRef = db.collection("users").doc(currentUserData.uid);
+      userRef.set({
+        watchProgress: {
+          [currentMovieId]: time
+        }
+      }, { merge: true });
+    }
+
+    async function getWatchProgress(movieId) {
+      if(!currentUserData) return 0;
+      try {
+        const doc = await db.collection("users").doc(currentUserData.uid).get();
+        if(doc.exists && doc.data().watchProgress && doc.data().watchProgress[movieId]) {
+          return doc.data().watchProgress[movieId];
+        }
+      } catch(e) { console.error("Erreur lecture progress", e); }
+      return 0;
+    }
 
     function initHero() {
       trailerPool = shuffle(movies.filter(movieHasPlayableVideo));
@@ -538,135 +593,116 @@
       
       heroVideo.onended = () => {
         if(isMoviePlaying) {
-            // FIN DU FILM : ON RETOURNE AU TRAILER
             exitMovieMode();
         } else {
-            // FIN DU TRAILER : ON PASSE AU SUIVANT
             currentHeroIndex = (currentHeroIndex + 1) % trailerPool.length;
             playHeroMovie(trailerPool[currentHeroIndex]);
         }
       };
+
+      heroVideo.addEventListener('pause', () => {
+         if(isMoviePlaying) saveWatchProgress(heroVideo.currentTime);
+      });
     }
 
-    // FONCTION POUR LANCER UN FILM (Mode Cinéma)
-    function enterMovieMode(url) {
+    async function enterMovieMode(url, movieId) {
+        if(!currentUserData) {
+            showToast("Connectez-vous pour sauvegarder votre progression");
+        }
+
         isMoviePlaying = true;
+        currentMovieId = movieId;
         
-        // Cache l'interface
         heroContainer.classList.add('playing-mode');
         document.body.classList.add('cinema-mode'); 
+        hideHeader(); 
         
-        // On force le header à remonter tout de suite
-        hideHeader();
-
-        // Setup Vidéo
+        const savedTime = await getWatchProgress(movieId);
         heroVideo.src = url;
-        heroVideo.currentTime = 0;
-        heroVideo.muted = false;
-        heroVideo.controls = true;
-        heroVideo.style.objectFit = 'contain';
         
-        heroVideo.play();
+        const onReady = () => {
+            if(savedTime > 5) {
+               heroVideo.currentTime = savedTime;
+               showToast("Reprise de la lecture...");
+            } else {
+               heroVideo.currentTime = 0;
+            }
+            heroVideo.muted = false;
+            heroVideo.controls = true;
+            heroVideo.style.objectFit = 'contain';
+            heroVideo.play().catch(e => console.log("Autoplay bloqué", e));
+            heroVideo.removeEventListener('loadedmetadata', onReady);
+        };
+        heroVideo.addEventListener('loadedmetadata', onReady);
+        
         window.scrollTo({top:0, behavior:'smooth'});
         
-        // Fullscreen auto
-        if(heroVideo.requestFullscreen) heroVideo.requestFullscreen();
-        else if(heroVideo.webkitRequestFullscreen) heroVideo.webkitRequestFullscreen();
+        if(saveInterval) clearInterval(saveInterval);
+        saveInterval = setInterval(() => {
+           if(isMoviePlaying && !heroVideo.paused) saveWatchProgress(heroVideo.currentTime);
+        }, 10000);
     }
 
-    // FONCTION POUR SORTIR DU MODE FILM
     function exitMovieMode() {
+        if(isMoviePlaying) saveWatchProgress(heroVideo.currentTime);
+        if(saveInterval) clearInterval(saveInterval);
+
         isMoviePlaying = false;
+        currentMovieId = null;
         
-        // Quitte le fullscreen si actif
         if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
         
-        // Réaffiche l'interface
         heroContainer.classList.remove('playing-mode');
         document.body.classList.remove('cinema-mode');
         
-        // Reset Vidéo en mode Trailer
         heroVideo.controls = false;
         heroVideo.style.objectFit = 'cover';
         heroVideo.muted = true;
         
-        // Reprend la boucle des trailers
         playHeroMovie(trailerPool[currentHeroIndex]);
-        
-        // Réaffiche le header
         showHeader();
     }
 
     function playHeroMovie(movie) {
       if(isMoviePlaying) return; 
-
       heroVideo.src = movie.trailerUrl || movie.videoUrl;
       heroVideo.muted = true;
       heroVideo.play().catch(()=>{});
       updateMuteIcon();
-
       heroTitle.textContent = movie.title;
       heroDesc.textContent = movie.description;
-      heroMeta.innerHTML = `<span class="badge">${movie.year}</span><span class="badge">${movie.duration}</span><span class="badge">${(movie.genres||[]).slice(0,3).join(" • ")}</span>`;
-      
-      // BOUTON LECTURE -> LANCE LE FILM COMPLET
+      heroMeta.innerHTML = `<span class="badge">${movie.year}</span><span class="badge">${movie.duration}</span><span class="badge">${(movie.genres||[]).slice(0,3).join(" • ")}</span>`;      
       heroPlayBtn.onclick = () => {
          const movieUrl = movie.videoUrl || movie.trailerUrl;
-         enterMovieMode(movieUrl);
+         enterMovieMode(movieUrl, movie.id);
       };
-      
       heroMoreBtn.onclick = () => openOverlay(movie);
     }
     
-    heroMuteBtn.onclick = () => {
-      heroVideo.muted = !heroVideo.muted;
-      updateMuteIcon();
-    };
+    heroMuteBtn.onclick = () => { heroVideo.muted = !heroVideo.muted; updateMuteIcon(); };
+    function updateMuteIcon() { heroMuteBtn.textContent = heroVideo.muted ? "🔇" : "🔊"; }
 
-    function updateMuteIcon() {
-      heroMuteBtn.textContent = heroVideo.muted ? "🔇" : "🔊";
-    }
-
-    // --- LOGIQUE HEADER AUTO-HIDE ---
+    // --- HEADER AUTO-HIDE ---
     let headerTimeout;
     const header = document.getElementById('mainHeader');
     const searchInputEl = document.getElementById('searchInput');
 
-    function showHeader() {
-        header.classList.remove('header-auto-hide');
-    }
-
-    function hideHeader() {
-        // Ne pas cacher si on est focus sur la recherche ou si la souris est sur le header
-        if (document.activeElement === searchInputEl || header.matches(':hover')) return;
-        header.classList.add('header-auto-hide');
-    }
-
-    function resetHeaderTimer() {
-        showHeader();
-        clearTimeout(headerTimeout);
-        headerTimeout = setTimeout(hideHeader, 6000); // 6 secondes
-    }
-
-    // Détection globale du mouvement de souris
-    document.addEventListener('mousemove', () => {
-        // Fonctionne tout le temps, même pendant le film
-        resetHeaderTimer();
-    });
-
-    // Gestion du scroll pour le fond sombre
-    window.addEventListener("scroll", () => {
-      if(window.scrollY > 50) header.classList.add("scrolled");
-      else header.classList.remove("scrolled");
-    });
-
-    // Exceptions pour le header
+    function showHeader() { header.classList.remove('header-auto-hide'); }
+    function hideHeader() { if (document.activeElement === searchInputEl || header.matches(':hover')) return; header.classList.add('header-auto-hide'); }
+    function resetHeaderTimer() { showHeader(); clearTimeout(headerTimeout); headerTimeout = setTimeout(hideHeader, 3000); }
+    document.addEventListener('mousemove', () => { resetHeaderTimer(); });
+    window.addEventListener("scroll", () => { if(window.scrollY > 50) header.classList.add("scrolled"); else header.classList.remove("scrolled"); });
     header.addEventListener('mouseenter', () => clearTimeout(headerTimeout));
-    header.addEventListener('mouseleave', resetHeaderTimer);
-    searchInputEl.addEventListener('focus', () => clearTimeout(headerTimeout));
-    searchInputEl.addEventListener('blur', resetHeaderTimer);
+    header.addEventListener('mouseleave', () => resetHeaderTimer());
 
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(()=>t.classList.remove("show"), 3000);
+    }
 
+    // --- RENDU SECTIONS ---
     const sectionsContainer = document.getElementById("sectionsContainer");
     function renderSections() {
       sectionsContainer.innerHTML = "";
@@ -681,7 +717,7 @@
             <div class="movie-row">
               ${catMovies.map(m => `
                 <div class="movie-card" data-id="${m.id}">
-                  <div class="poster-wrapper"><img src="${m.poster}" loading="lazy" alt="${m.title}"></div>
+                  <div class="poster-wrapper"><img src="${m.poster}" loading="lazy" alt="${m.title}" onerror="this.src='https://via.placeholder.com/200x300?text=No+Img'"></div>
                   <div class="movie-title-mini">${m.title}</div>
                 </div>
               `).join("")}
@@ -705,6 +741,7 @@
       row.scrollBy({ left: amount, behavior: 'smooth' });
     };
 
+    // --- RECHERCHE ---
     const searchResults = document.getElementById("searchResults");
     searchInputEl.addEventListener("input", (e) => {
       const q = normalizeText(e.target.value);
@@ -750,6 +787,7 @@
       }
     });
 
+    // --- OVERLAYS ---
     const overlay = document.getElementById("overlay");
     function openOverlay(m) {
       document.getElementById("overlayPoster").src = m.poster;
@@ -761,60 +799,113 @@
       document.getElementById("overlayWatchMovieBtn").onclick = () => {
          const movieUrl = m.videoUrl || m.trailerUrl;
          closeAllOverlays();
-         enterMovieMode(movieUrl);
+         enterMovieMode(movieUrl, m.id);
       };
       
       document.getElementById("overlayWatchTrailerBtn").onclick = () => {
          const movieUrl = m.trailerUrl || m.videoUrl;
          closeAllOverlays();
-         // Pour le trailer, on lance aussi en mode cinéma pour bien voir
-         enterMovieMode(movieUrl);
+         enterMovieMode(movieUrl, m.id); 
       };
+      
       const btnDel = document.getElementById("overlayDeleteBtn");
+      const btnEdit = document.getElementById("overlayEditBtn");
+      
+      // Affichage conditionnel sécurisé (la suppression réelle sera bloquée par Firestore si pas admin)
       if(isDev) {
         btnDel.classList.remove("hidden");
+        btnEdit.classList.remove("hidden");
+        
         btnDel.onclick = async () => {
-          if(!confirm("Supprimer ?")) return;
-          await deleteMovie(m.id); location.reload();
+          if(!confirm("Supprimer ce film définitivement ?")) return;
+          if(await deleteMovie(m.id)) {
+              location.reload();
+          }
         }
-      } else { btnDel.classList.add("hidden"); }
+        
+        btnEdit.onclick = () => {
+           closeAllOverlays();
+           openAdmin(m.type, m);
+        }
+      } else { 
+        btnDel.classList.add("hidden"); 
+        btnEdit.classList.add("hidden"); 
+      }
+      
       overlay.classList.remove("overlay-hidden");
     }
 
     function closeAllOverlays() { document.querySelectorAll(".overlay-backdrop").forEach(el => el.classList.add("overlay-hidden")); }
     document.querySelectorAll(".overlay-close").forEach(btn => btn.onclick = closeAllOverlays);
 
+    // --- GESTION ADMIN (UI) ---
     const adminOverlay = document.getElementById("adminOverlay");
     const catOverlay = document.getElementById("categoryOverlay");
     const accountOverlay = document.getElementById("accountOverlay");
     
-    document.getElementById("addMovieBtn").onclick = () => { openAdmin("film"); document.getElementById("adminForm").reset(); };
-    document.getElementById("addSeriesBtn").onclick = () => { openAdmin("serie"); document.getElementById("adminForm").reset(); };
+    document.getElementById("addMovieBtn").onclick = () => { openAdmin("film"); };
+    document.getElementById("addSeriesBtn").onclick = () => { openAdmin("serie"); };
     document.getElementById("addCategoryBtn").onclick = () => { catOverlay.classList.remove("overlay-hidden"); renderCatList(); };
     document.getElementById("accountBtn").onclick = () => accountOverlay.classList.remove("overlay-hidden");
 
     let currentAdminType = "film";
-    function openAdmin(type) {
+    let editingMovieId = null;
+
+    function openAdmin(type, movieToEdit = null) {
+      if(!isDev) return;
       currentAdminType = type;
-      document.getElementById("adminTitle").textContent = type === 'film' ? "Ajouter Film" : "Ajouter Série";
+      document.getElementById("adminForm").reset();
+      
+      if(movieToEdit) {
+         editingMovieId = movieToEdit.id;
+         document.getElementById("adminTitle").textContent = "Modifier";
+         document.getElementById("adminCreate").textContent = "Mettre à jour";
+         
+         document.getElementById("fieldName").value = movieToEdit.title;
+         document.getElementById("fieldYear").value = movieToEdit.year;
+         document.getElementById("fieldDuration").value = movieToEdit.duration;
+         document.getElementById("fieldGenres").value = movieToEdit.genres.join(", ");
+         document.getElementById("fieldTags").value = movieToEdit.tags.join(", ");
+         document.getElementById("fieldCast").value = movieToEdit.cast.join(", ");
+         document.getElementById("fieldPoster").value = movieToEdit.poster;
+         document.getElementById("fieldTrailer").value = movieToEdit.trailerUrl;
+         document.getElementById("fieldMovieUrl").value = movieToEdit.videoUrl;
+         document.getElementById("fieldDescription").value = movieToEdit.description;
+         
+      } else {
+         editingMovieId = null;
+         document.getElementById("adminTitle").textContent = type === 'film' ? "Ajouter Film" : "Ajouter Série";
+         document.getElementById("adminCreate").textContent = "Ajouter";
+      }
+      
       adminOverlay.classList.remove("overlay-hidden");
     }
+
     document.getElementById("adminForm").onsubmit = async (e) => {
       e.preventDefault();
       const title = document.getElementById("fieldName").value;
-      if(movies.some(m => normalizeText(m.title) === normalizeText(title))) { alert("Ce film existe déjà !"); return; }
+      
       const newMovie = {
-        id: slugify(title) + "-" + Date.now(), type: currentAdminType, title: title,
-        year: document.getElementById("fieldYear").value, duration: document.getElementById("fieldDuration").value,
+        id: editingMovieId ? editingMovieId : slugify(title) + "-" + Date.now(),
+        type: currentAdminType, 
+        title: title,
+        year: parseInt(document.getElementById("fieldYear").value), 
+        duration: document.getElementById("fieldDuration").value,
         genres: document.getElementById("fieldGenres").value.split(",").map(s=>s.trim()).filter(Boolean),
         tags: document.getElementById("fieldTags").value.split(",").map(s=>s.trim().toLowerCase()).filter(Boolean),
         cast: document.getElementById("fieldCast").value.split(",").map(s=>s.trim()).filter(Boolean),
-        poster: document.getElementById("fieldPoster").value, trailerUrl: document.getElementById("fieldTrailer").value,
-        videoUrl: document.getElementById("fieldMovieUrl").value, description: document.getElementById("fieldDescription").value
+        poster: document.getElementById("fieldPoster").value, 
+        trailerUrl: document.getElementById("fieldTrailer").value,
+        videoUrl: document.getElementById("fieldMovieUrl").value, 
+        description: document.getElementById("fieldDescription").value
       };
+      
       newMovie._searchStr = normalizeText([newMovie.title, ...newMovie.genres, ...newMovie.cast, newMovie.year].join(" "));
-      movies.push(newMovie); await saveMovie(newMovie);
-      closeAllOverlays(); renderSections(); alert("Ajouté avec succès !");
+      
+      if(await saveMovie(newMovie)) {
+          closeAllOverlays(); 
+          location.reload();
+      }
     };
     document.getElementById("adminCancel").onclick = closeAllOverlays;
 
@@ -823,8 +914,11 @@
       const k = document.getElementById("catKey").value.toLowerCase().trim();
       const l = document.getElementById("catLabel").value.trim();
       const newC = { key: k, label: l };
-      customCategories.push(newC); await saveCategory(newC);
-      renderCatList(); renderSections(); document.getElementById("categoryForm").reset();
+      if(await saveCategory(newC)) {
+        customCategories.push(newC); 
+        renderCatList(); renderSections(); 
+        document.getElementById("categoryForm").reset();
+      }
     };
     function renderCatList() {
       document.getElementById("categoryList").innerHTML = customCategories.map(c => `
@@ -833,38 +927,84 @@
         </div>`).join("");
     }
     window.removeCat = async (k) => {
-      if(!confirm("Supprimer ?")) return;
-      customCategories = customCategories.filter(c => c.key !== k);
-      await deleteCategory(k); renderCatList(); renderSections();
+      if(!confirm("Supprimer catégorie ?")) return;
+      if(await deleteCategory(k)) {
+        customCategories = customCategories.filter(c => c.key !== k);
+        renderCatList(); renderSections();
+      }
     };
 
+    // --- AUTHENTIFICATION SÉCURISÉE ---
     const tabLogin = document.getElementById("tabLogin"), tabRegister = document.getElementById("tabRegister");
     const formLogin = document.getElementById("loginForm"), formRegister = document.getElementById("registerForm");
-    tabLogin.onclick = () => { tabLogin.classList.replace("btn-ghost", "btn-primary"); tabRegister.classList.replace("btn-primary", "btn-ghost"); formLogin.classList.remove("hidden"); formRegister.classList.add("hidden"); };
-    tabRegister.onclick = () => { tabRegister.classList.replace("btn-ghost", "btn-primary"); tabLogin.classList.replace("btn-primary", "btn-ghost"); formRegister.classList.remove("hidden"); formLogin.classList.add("hidden"); };
     
+    tabLogin.onclick = () => { 
+        tabLogin.classList.replace("btn-ghost", "btn-primary"); tabRegister.classList.replace("btn-primary", "btn-ghost"); 
+        formLogin.classList.remove("hidden"); formRegister.classList.add("hidden"); 
+    };
+    tabRegister.onclick = () => { 
+        tabRegister.classList.replace("btn-ghost", "btn-primary"); tabLogin.classList.replace("btn-primary", "btn-ghost"); 
+        formRegister.classList.remove("hidden"); formLogin.classList.add("hidden"); 
+    };
+    
+    // LOGIN
     formLogin.onsubmit = (e) => {
       e.preventDefault();
-      const id = document.getElementById("loginIdentifier").value.trim(), pass = document.getElementById("loginPassword").value;
-      if(id === DEV_IDENT && pass === DEV_PASS) { setCurrentUser(id); closeAllOverlays(); return; }
-      const u = users.find(x => x.identifier === id && x.password === pass);
-      if(u) { setCurrentUser(u.identifier); closeAllOverlays(); } else { document.getElementById("loginError").style.display = "block"; }
+      const email = document.getElementById("loginIdentifier").value.trim();
+      const pass = document.getElementById("loginPassword").value;
+      const errorDiv = document.getElementById("loginError");
+      
+      auth.signInWithEmailAndPassword(email, pass)
+          .then(() => { closeAllOverlays(); errorDiv.style.display = 'none'; showToast("Connexion réussie"); })
+          .catch(err => { errorDiv.style.display = 'block'; errorDiv.textContent = err.message; });
     };
-    formRegister.onsubmit = async (e) => {
+
+    // REGISTER
+    formRegister.onsubmit = (e) => {
       e.preventDefault();
-      const id = document.getElementById("registerIdentifier").value.trim(), pass = document.getElementById("registerPassword").value, pass2 = document.getElementById("registerPassword2").value;
-      if(pass !== pass2) { alert("Mots de passe différents"); return; }
-      if(users.some(u => u.identifier === id)) { alert("Existe déjà"); return; }
-      const newU = { identifier: id, password: pass };
-      users.push(newU); await saveUser(newU); setCurrentUser(id); closeAllOverlays();
+      const email = document.getElementById("registerIdentifier").value.trim();
+      const pass = document.getElementById("registerPassword").value;
+      const pass2 = document.getElementById("registerPassword2").value;
+      const errorDiv = document.getElementById("registerError");
+
+      if(pass !== pass2) { errorDiv.textContent = "Mots de passe différents"; errorDiv.style.display = "block"; return; }
+
+      auth.createUserWithEmailAndPassword(email, pass)
+          .then((cred) => {
+              // Création de la fiche user dans Firestore
+              return db.collection("users").doc(cred.user.uid).set({
+                  email: email,
+                  createdAt: firebase.firestore.FieldValue.serverTimestamp()
+              });
+          })
+          .then(() => { closeAllOverlays(); formRegister.reset(); showToast("Compte créé !"); })
+          .catch(err => { errorDiv.style.display = 'block'; errorDiv.textContent = err.message; });
     };
-    document.getElementById("logoutBtn").onclick = () => { setCurrentUser(null); closeAllOverlays(); };
+
+    // LOGOUT
+    document.getElementById("logoutBtn").onclick = () => {
+        auth.signOut().then(() => { closeAllOverlays(); showToast("Déconnecté"); });
+    };
+
     function updateAccountUI() {
       const btn = document.getElementById("accountBtn"), logoutSec = document.getElementById("logoutSection");
-      if(currentUser) { btn.textContent = currentUser; document.getElementById("currentUserLabel").textContent = currentUser; logoutSec.classList.remove("hidden"); }
-      else { btn.textContent = "Compte"; logoutSec.classList.add("hidden"); }
+      const userLabel = document.getElementById("currentUserLabel");
+      
+      if(currentUserData) {
+         btn.textContent = "Mon Compte";
+         userLabel.textContent = currentUserData.email;
+         logoutSec.classList.remove("hidden");
+         formLogin.classList.add("hidden"); // Cache les formulaires si déjà connecté
+      } else {
+         btn.textContent = "Connexion";
+         logoutSec.classList.add("hidden");
+         formLogin.classList.remove("hidden");
+      }
+
+      // Gestion visibilité boutons Admin
       const devs = [document.getElementById("addMovieBtn"), document.getElementById("addSeriesBtn"), document.getElementById("addCategoryBtn")];
-      if(isDev) devs.forEach(b => b.classList.remove("hidden")); else devs.forEach(b => b.classList.add("hidden"));
+      if(isDev) devs.forEach(b => b.classList.remove("hidden")); 
+      else devs.forEach(b => b.classList.add("hidden"));
     }
 
     document.addEventListener("DOMContentLoaded", initApp);
