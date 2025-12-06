@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
+<!DOCTYPE html><html lang="fr"><head>
   <meta charset="UTF-8">
   <title>NeonStream</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -253,15 +251,13 @@
     .movie-card:hover .card-add-btn { opacity: 1; transform: translateY(0); }
     .card-add-btn.added { background: var(--accent); color: white; }
     
-    /* BOUTON SUPPRIMER (ROUGE) */
    /* BOUTON SUPPRIMER (ROUGE) */
 .card-add-btn.remove {
     border-color: var(--danger); 
     color: var(--danger);
     /* AJOUTEZ CETTE LIGNE pour mettre le fond en noir */
     background: rgba(0, 0, 0, 0.8); /* Fond semi-transparent noir */
-}
-/* Lorsque la souris est sur le bouton */
+}/* Lorsque la souris est sur le bouton */
 .card-add-btn.remove:hover {
     /* Garder le fond rouge au survol pour l'effet de confirmation */
     background: var(--danger); 
@@ -324,6 +320,79 @@
     .overlay-close { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.1); border: none; color: #fff; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
     .overlay-close:hover { background: rgba(255,255,255,0.2); }
     .overlay-layout { display: grid; grid-template-columns: 240px 1fr; gap: 24px; }
+    <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche" onerror="this.src='https://placehold.co/300x450?text=No+Poster'"></div>
+    <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche" onerror="this.src='https://placehold.co/300x450?text=No+Poster'"></div>
+    <div class="overlay-title">Titre</div>
+    <div class="overlay-meta"></div>
+    <div style="margin-bottom:10px; font-size:0.85rem; color:#fff;">Avec : <span id="overlayActors" style="color:#a1a1aa;"></span></div>
+    <p class="overlay-desc">Description...</p>
+    <div class="overlay-footer">
+        <button class="btn-ghost hidden" id="overlayDeleteBtn" style="color:#f87171; border-color:rgba(248,113,113,0.3);">Supprimer</button>
+        <button class="btn-ghost hidden" id="overlayEditBtn" style="border-color:rgba(255,255,255,0.3);">Modifier</button>
+        <button class="btn-ghost" id="overlayMyListBtn">Ma Liste</button>
+        <button class="btn-ghost" id="overlayWatchTrailerBtn">Voir Trailer</button>
+        <button class="btn-primary" id="overlayWatchMovieBtn">Regarder le film</button>
+    </div>
+    <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche" onerror="this.src='https://placehold.co/300x450?text=No+Poster'"></div>
+    <div class="overlay-title">Titre</div>
+    <div class="overlay-meta"></div>
+    <div style="margin-bottom:10px; font-size:0.85rem; color:#fff;">Avec : <span id="overlayActors" style="color:#a1a1aa;"></span></div>
+    <p class="overlay-desc">Description...</p>
+    <div class="overlay-footer">
+        <button class="btn-ghost hidden" id="overlayDeleteBtn" style="color:#f87171; border-color:rgba(248,113,113,0.3);">Supprimer</button>
+        <button class="btn-ghost hidden" id="overlayEditBtn" style="border-color:rgba(255,255,255,0.3);">Modifier</button>
+        <button class="btn-ghost" id="overlayMyListBtn">Ma Liste</button>
+        <button class="btn-ghost" id="overlayWatchTrailerBtn">Voir Trailer</button>
+        <button class="btn-primary" id="overlayWatchMovieBtn">Regarder le film</button>
+    </div>
+    <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche" onerror="this.src='https://placehold.co/300x450?text=No+Poster'"></div>
+    <div class="overlay-title">Titre</div>
+    <div class="overlay-meta"></div>
+    <div style="margin-bottom:10px; font-size:0.85rem; color:#fff;">Avec : <span id="overlayActors" style="color:#a1a1aa;"></span></div>
+    <p class="overlay-desc">Description...</p>
+    <div class="overlay-footer">
+        <button class="btn-ghost hidden" id="overlayDeleteBtn" style="color:#f87171; border-color:rgba(248,113,113,0.3);">Supprimer</button>
+        <button class="btn-ghost hidden" id="overlayEditBtn" style="border-color:rgba(255,255,255,0.3);">Modifier</button>
+        <button class="btn-ghost" id="overlayMyListBtn">Ma Liste</button>
+        <button class="btn-ghost" id="overlayWatchTrailerBtn">Voir Trailer</button>
+        <button class="btn-primary" id="overlayWatchMovieBtn">Regarder le film</button>
+    </div>
+    <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche" onerror="this.src='https://placehold.co/300x450?text=No+Poster'"></div>
+    <div class="overlay-title">Titre</div>
+    <div class="overlay-meta"></div>
+    <div style="margin-bottom:10px; font-size:0.85rem; color:#fff;">Avec : <span id="overlayActors" style="color:#a1a1aa;"></span></div>
+    <p class="overlay-desc">Description...</p>
+    <div class="overlay-footer">
+        <button class="btn-ghost hidden" id="overlayDeleteBtn" style="color:#f87171; border-color:rgba(248,113,113,0.3);">Supprimer</button>
+        <button class="btn-ghost hidden" id="overlayEditBtn" style="border-color:rgba(255,255,255,0.3);">Modifier</button>
+        <button class="btn-ghost" id="overlayMyListBtn">Ma Liste</button>
+        <button class="btn-ghost" id="overlayWatchTrailerBtn">Voir Trailer</button>
+        <button class="btn-primary" id="overlayWatchMovieBtn">Regarder le film</button>
+    </div>
+    <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche" onerror="this.src='https://placehold.co/300x450?text=No+Poster'"></div>
+    <div class="overlay-title">Titre</div>
+    <div class="overlay-meta"></div>
+    <div style="margin-bottom:10px; font-size:0.85rem; color:#fff;">Avec : <span id="overlayActors" style="color:#a1a1aa;"></span></div>
+    <p class="overlay-desc">Description...</p>
+    <div class="overlay-footer">
+        <button class="btn-ghost hidden" id="overlayDeleteBtn" style="color:#f87171; border-color:rgba(248,113,113,0.3);">Supprimer</button>
+        <button class="btn-ghost hidden" id="overlayEditBtn" style="border-color:rgba(255,255,255,0.3);">Modifier</button>
+        <button class="btn-ghost" id="overlayMyListBtn">Ma Liste</button>
+        <button class="btn-ghost" id="overlayWatchTrailerBtn">Voir Trailer</button>
+        <button class="btn-primary" id="overlayWatchMovieBtn">Regarder le film</button>
+    </div>
+    <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche" onerror="this.src='https://placehold.co/300x450?text=No+Poster'"></div>
+    <div class="overlay-title">Titre</div>
+    <div class="overlay-meta"></div>
+    <div style="margin-bottom:10px; font-size:0.85rem; color:#fff;">Avec : <span id="overlayActors" style="color:#a1a1aa;"></span></div>
+    <p class="overlay-desc">Description...</p>
+    <div class="overlay-footer">
+        <button class="btn-ghost hidden" id="overlayDeleteBtn" style="color:#f87171; border-color:rgba(248,113,113,0.3);">Supprimer</button>
+        <button class="btn-ghost hidden" id="overlayEditBtn" style="border-color:rgba(255,255,255,0.3);">Modifier</button>
+        <button class="btn-ghost" id="overlayMyListBtn">Ma Liste</button>
+        <button class="btn-ghost" id="overlayWatchTrailerBtn">Voir Trailer</button>
+        <button class="btn-primary" id="overlayWatchMovieBtn">Regarder le film</button>
+    </div>
     .overlay-poster { border-radius: 8px; overflow: hidden; aspect-ratio: 2/3; }
     .overlay-poster img { width: 100%; height: 100%; object-fit: cover; }
     .overlay-title { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
@@ -363,9 +432,7 @@
       .scroll-btn { width: 36px; height: 36px; font-size: 1.2rem; opacity: 0.7; }
       .floating-admin-btn { bottom: 20px; right: 20px; width: 50px; height: 50px; font-size: 2rem; }
     }
-  </style>
-</head>
-<body>
+  </style></head><body>
 
   <header id="mainHeader">
     <div class="header-left">
@@ -403,7 +470,7 @@
       <div class="hero-actions">
         <button id="heroPlayBtn" class="btn-hero-play">▶ Lecture</button>
         <button id="heroMoreBtn" class="btn-hero-info">Plus d'infos</button>
-        <button id="heroMuteBtn" class="btn-hero-mute"></button>
+        <button id="heroMuteBtn" class="btn-hero-mute" title="Activer/Désactiver le son du trailer"></button>
       </div>
     </div>
   </div>
@@ -424,17 +491,17 @@
 
   <div id="overlay" class="overlay-backdrop overlay-hidden">
     <div class="overlay-dialog">
-      <button id="overlayClose" class="overlay-close">✕</button>
+      <button id="overlayClose" class="overlay-close" aria-label="Fermer la fenêtre modale">✕</button>
       <div class="overlay-layout">
-        <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche" onerror="this.src='https://placehold.co/300x450?text=No+Poster'"></div>
+        <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche du film" onerror="this.src='https://placehold.co/300x450?text=No+Poster'"></div>
         <div>
           <h2 id="overlayTitle" class="overlay-title">Titre</h2>
           <div id="overlayMeta" class="overlay-meta"></div>
           <div style="margin-bottom:10px; font-size:0.85rem; color:#fff;">Avec : <span id="overlayActors" style="color:#a1a1aa;"></span></div>
           <p id="overlayDesc" class="overlay-desc">Description...</p>
           <div class="overlay-footer">
-            <button class="btn-ghost hidden" id="overlayDeleteBtn" style="color:#f87171; border-color:rgba(248,113,113,0.3);">Supprimer</button>
-            <button class="btn-ghost hidden" id="overlayEditBtn" style="border-color:rgba(255,255,255,0.3);">Modifier</button>
+            <button class="btn-ghost hidden" id="overlayDeleteBtn" style="color:#f87171; border-color:rgba(248,113,113,0.3);" aria-label="Supprimer le film">Supprimer</button>
+            <button class="btn-ghost hidden" id="overlayEditBtn" style="border-color:rgba(255,255,255,0.3);" aria-label="Modifier les détails du film">Modifier</button>
             
             <button class="btn-ghost" id="overlayMyListBtn">Ma Liste</button>
 
@@ -448,7 +515,7 @@
 
   <div id="accountOverlay" class="overlay-backdrop overlay-hidden">
     <div class="overlay-dialog" style="max-width:400px;">
-      <button id="accountClose" class="overlay-close">✕</button>
+      <button id="accountClose" class="overlay-close" aria-label="Fermer la fenêtre de compte">✕</button>
       <h2 class="overlay-title" style="font-size:1.5rem;">Compte</h2>
       <div style="display:flex; gap:10px; margin-bottom:20px;">
         <button id="tabLogin" class="btn-primary" style="flex:1;">Connexion</button>
@@ -456,16 +523,16 @@
       </div>
       
       <form id="loginForm">
-        <label class="form-label">Email</label><input id="loginIdentifier" class="form-input" type="email" required placeholder="exemple@mail.com">
-        <label class="form-label">Mot de passe</label><input id="loginPassword" class="form-input" type="password" required placeholder="••••••">
+        <label class="form-label">Email</label><input id="loginIdentifier" class="form-input" type="email" required placeholder="exemple@mail.com" aria-label="Adresse email de connexion">
+        <label class="form-label">Mot de passe</label><input id="loginPassword" class="form-input" type="password" required placeholder="••••••" aria-label="Mot de passe de connexion">
         <div id="loginError" style="color:#f87171; font-size:0.8rem; margin-top:5px; display:none;">Erreur d'identifiants</div>
         <button type="submit" class="btn-primary" style="width:100%; margin-top:15px;">Se connecter</button>
       </form>
 
       <form id="registerForm" class="hidden">
-        <label class="form-label">Email</label><input id="registerIdentifier" class="form-input" type="email" required placeholder="exemple@mail.com">
-        <label class="form-label">Mot de passe</label><input id="registerPassword" class="form-input" type="password" required minlength="6">
-        <label class="form-label">Confirmation</label><input id="registerPassword2" class="form-input" type="password" required>
+        <label class="form-label">Email</label><input id="registerIdentifier" class="form-input" type="email" required placeholder="exemple@mail.com" aria-label="Adresse email d'inscription">
+        <label class="form-label">Mot de passe</label><input id="registerPassword" class="form-input" type="password" required minlength="6" aria-label="Mot de passe">
+        <label class="form-label">Confirmation</label><input id="registerPassword2" class="form-input" type="password" required aria-label="Confirmer le mot de passe">
         <div id="registerError" style="color:#f87171; font-size:0.8rem; margin-top:5px; display:none;">Erreur</div>
         <button type="submit" class="btn-primary" style="width:100%; margin-top:15px;">Créer compte</button>
       </form>
@@ -479,7 +546,7 @@
 
   <div id="adminOverlay" class="overlay-backdrop overlay-hidden">
     <div class="overlay-dialog" style="max-width:500px; max-height:90vh; overflow-y:auto;">
-      <button id="adminClose" class="overlay-close">✕</button>
+      <button id="adminClose" class="overlay-close" aria-label="Fermer l'interface d'administration">✕</button>
       <h2 id="adminTitle" class="overlay-title" style="font-size:1.5rem;">Ajouter</h2>
       
       <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid rgba(168,85,247,0.3);">
@@ -492,22 +559,22 @@
       </div>
 
       <form id="adminForm" style="display:flex; flex-direction:column; gap:8px;">
-        <div><label class="form-label">Titre *</label><input id="fieldName" class="form-input" required></div>
+        <div><label class="form-label">Titre *</label><input id="fieldName" class="form-input" required aria-label="Titre du film ou de la série"></div>
         <div style="display:flex; gap:10px;">
-          <div style="flex:1;"><label class="form-label">Année</label><input id="fieldYear" type="number" class="form-input" value="2024"></div>
-          <div style="flex:1;"><label class="form-label">Durée</label><input id="fieldDuration" class="form-input" placeholder="ex: 1h54"></div>
+          <div style="flex:1;"><label class="form-label">Année</label><input id="fieldYear" type="number" class="form-input" value="2024" aria-label="Année de sortie"></div>
+          <div style="flex:1;"><label class="form-label">Durée</label><input id="fieldDuration" class="form-input" placeholder="ex: 1h54" aria-label="Durée du film ou de la série"></div>
         </div>
-        <div><label class="form-label">Genres</label><input id="fieldGenres" class="form-input" placeholder="Action, Drame..."></div>
-        <div><label class="form-label">Tags (catégories)</label><input id="fieldTags" class="form-input" placeholder="new, action..."></div>
-        <div><label class="form-label">Acteurs</label><input id="fieldCast" class="form-input"></div>
-        <div><label class="form-label">URL Affiche *</label><input id="fieldPoster" class="form-input" required></div>
+        <div><label class="form-label">Genres</label><input id="fieldGenres" class="form-input" placeholder="Action, Drame..." aria-label="Genres séparés par des virgules"></div>
+        <div><label class="form-label">Tags (catégories)</label><input id="fieldTags" class="form-input" placeholder="new, action..." aria-label="Tags séparés par des virgules"></div>
+        <div><label class="form-label">Acteurs</label><input id="fieldCast" class="form-input" aria-label="Liste des acteurs principaux"></div>
+        <div><label class="form-label">URL Affiche *</label><input id="fieldPoster" class="form-input" required aria-label="URL de l'affiche"></div>
         
         <div style="border-top:1px solid #333; margin-top:10px; padding-top:10px;">
-            <div><label class="form-label">URL Trailer (YouTube/MP4) *</label><input id="fieldTrailer" class="form-input" required></div>
-            <div><label class="form-label">URL Film Complet (MP4/HLS) *</label><input id="fieldMovieUrl" class="form-input" required placeholder="https://.../film.mp4"></div>
+            <div><label class="form-label">URL Trailer (YouTube/MP4) *</label><input id="fieldTrailer" class="form-input" required aria-label="URL du trailer"></div>
+            <div><label class="form-label">URL Film Complet (MP4/HLS) *</label><input id="fieldMovieUrl" class="form-input" required placeholder="https://.../film.mp4" aria-label="URL du film complet"></div>
         </div>
 
-        <div><label class="form-label">Description</label><textarea id="fieldDescription" class="form-input" style="min-height:80px;"></textarea></div>
+        <div><label class="form-label">Description</label><textarea id="fieldDescription" class="form-input" style="min-height:80px;" aria-label="Description du contenu"></textarea></div>
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
           <button type="button" id="adminCancel" class="btn-ghost">Annuler</button>
           <button type="submit" id="adminCreate" class="btn-primary">Enregistrer</button>
@@ -518,11 +585,11 @@
 
   <div id="categoryOverlay" class="overlay-backdrop overlay-hidden">
     <div class="overlay-dialog" style="max-width:400px;">
-      <button id="categoryClose" class="overlay-close">✕</button>
+      <button id="categoryClose" class="overlay-close" aria-label="Fermer l'interface des catégories">✕</button>
       <h2 class="overlay-title" style="font-size:1.4rem;">Gérer Catégories</h2>
       <form id="categoryForm" style="margin-bottom:20px;">
-        <label class="form-label">Tag (ex: marvel)</label><input id="catKey" class="form-input" required>
-        <label class="form-label">Titre affiché</label><input id="catLabel" class="form-input" required>
+        <label class="form-label">Tag (ex: marvel)</label><input id="catKey" class="form-input" required aria-label="Clé du tag (sans espace)">
+        <label class="form-label">Titre affiché</label><input id="catLabel" class="form-input" required aria-label="Nom de la catégorie affiché">
         <div id="catError" style="color:#f87171; display:none;">Erreur d'ajout.</div>
         <button type="submit" class="btn-primary" style="width:100%; margin-top:10px;">Créer</button>
       </form>
@@ -572,15 +639,15 @@
     function shuffle(array) { return [...array].sort(() => Math.random() - 0.5); }
     function movieHasPlayableVideo(m) { return !!(m.trailerUrl || m.videoUrl); }
     
-    // --- NOUVELLE FONCTION: AFFICHER TOAST ---
-    function showToast(msg) {
+    // --- TOAST FUNCTION ---
+    function showToast(msg){
       const t = document.getElementById("toast");
       t.textContent = msg;
       t.classList.add("show");
       setTimeout(()=>t.classList.remove("show"), 3000);
     }
     
-    // --- FONCTIONS HEADER (REMONTEES POUR FIXER LA REFERENCE ERROR) ---
+    // --- HEADER FUNCTIONS ---
     let headerTimeout;
     const header = document.getElementById('mainHeader');
     const searchInputEl = document.getElementById('searchInput');
@@ -588,14 +655,60 @@
     function showHeader() { header.classList.remove('header-auto-hide'); }
     function hideHeader() { if (document.activeElement === searchInputEl || header.matches(':hover')) return; header.classList.add('header-auto-hide'); }
     function resetHeaderTimer() { showHeader(); clearTimeout(headerTimeout); headerTimeout = setTimeout(hideHeader, 3000); }
-    // FIN DES FONCTIONS REMONTEES
-
+    
     window.resetToHome = () => {
         if(isMoviePlaying) exitPlayer();
         closeAllOverlays();
         window.scrollTo({top:0, behavior:'smooth'});
         initHero();
     };
+    
+    // --- AUTOMATIC WATCH PROGRESS CLEANUP ---
+    async function cleanOldWatchProgress() {
+        if(!currentUserData) return;
+        const TEN_DAYS_MS = 10 * 24 * 60 * 60 * 1000;
+        const now = Date.now();
+        let cleaned = false;
+        
+        for (const movieId in userProgress) {
+            const progress = userProgress[movieId];
+            
+            if (typeof progress !== 'object' || progress === null || !progress.lastUpdate) {
+                 delete userProgress[movieId];
+                 cleaned = true;
+                 continue;
+            }
+
+            const isTooOld = (now - progress.lastUpdate > TEN_DAYS_MS);
+            
+            if (progress.completed || isTooOld) {
+                delete userProgress[movieId];
+                cleaned = true;
+            }
+        }
+        
+        if (cleaned) {
+            try {
+                await db.collection("users").doc(currentUserData.uid).update({ watchProgress: userProgress });
+            } catch(e) { console.error("Erreur nettoyage auto:", e); }
+        }
+    }
+    
+    // --- MANUAL PROGRESS REMOVAL ---
+    window.removeFromWatchProgress = async (movieId) => {
+        if (!currentUserData) { showToast("Connectez-vous pour gérer votre progression."); return; }
+        
+        delete userProgress[movieId];
+        
+        showToast("Film retiré de 'Reprendre la lecture'");
+        renderAllRows(); 
+        
+        try {
+            const updatedProgress = { ...userProgress };
+            await db.collection("users").doc(currentUserData.uid).update({ watchProgress: updatedProgress });
+        } catch(e) { console.error("Erreur suppression progression:", e); }
+    }
+
 
     function initApp() {
         auth.onAuthStateChanged(async (user) => {
@@ -609,6 +722,7 @@
                 isDev = ADMIN_UIDS.includes(user.uid);
                 await loadUserData();
                 if(isDev) checkExpiredNewTags();
+                cleanOldWatchProgress();
             } else {
                 currentUserData = null;
                 userList = []; userProgress = {}; isDev = false;
@@ -632,6 +746,18 @@
             const data = doc.data();
             userList = data.myList || [];
             userProgress = data.watchProgress || {};
+            
+            // Normalize old progress structure (if it was just a number, convert to object)
+            for(const movieId in userProgress) {
+                if(typeof userProgress[movieId] !== 'object' || userProgress[movieId] === null || typeof userProgress[movieId] === 'number') {
+                    userProgress[movieId] = { 
+                        time: userProgress[movieId] || 0, 
+                        lastUpdate: Date.now(), 
+                        completed: false, 
+                        duration: 0 
+                    };
+                }
+            }
         }
     }
 
@@ -663,6 +789,7 @@
                if(!m.poster_path) return;
                const img = document.createElement("img");
                img.src = TMDB_IMG_BASE + m.poster_path;
+               img.alt = `Affiche de ${m.title}`;
                img.style.height = "80px"; img.style.cursor = "pointer"; img.style.borderRadius = "4px";
                img.onclick = () => fillFormWithTMDB(m);
                resDiv.appendChild(img);
@@ -745,11 +872,29 @@
     
     let trailerPool = [], currentHeroIndex = 0, isMoviePlaying = false, currentMovieId = null, saveInterval = null;
 
-    function saveWatchProgress(time) {
+    // --- WATCH PROGRESS SAVING ---
+    function saveWatchProgress(time, duration, isCompleted = false) {
       if(!currentUserData || !currentMovieId) return; 
-      userProgress[currentMovieId] = time; 
-      db.collection("users").doc(currentUserData.uid).set({ watchProgress: { [currentMovieId]: time } }, { merge: true });
+      
+      const progressData = {
+          time: time,
+          lastUpdate: Date.now(),
+          completed: isCompleted,
+          duration: duration 
+      };
+      
+      userProgress[currentMovieId] = progressData; 
+
+      // Save to Firestore
+      db.collection("users").doc(currentUserData.uid).set({ 
+          watchProgress: { [currentMovieId]: progressData } 
+      }, { merge: true });
+      
+      if(isCompleted) {
+          clearInterval(saveInterval);
+      }
     }
+
 
     function initHero() {
       trailerPool = shuffle(movies.filter(movieHasPlayableVideo));
@@ -766,11 +911,7 @@
       heroVideo.muted = true;
       heroMuteBtn.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="mute-svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path class="speaker" d="M11 5L6 9H2v6h4l5 4V5z" fill="currentColor" stroke="none"></path>
-          <path class="waves" d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-          <line class="cross" x1="3" y1="3" x2="21" y2="21"></line>
-        </svg>`;
-      updateMuteIcon();
+          <path class="speaker" d="M11 5L6 9H2v6h4l5 4V5z" fill="currentColor" stroke="none"></path>          <path class="waves" d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>          <line class="cross" x1="3" y1="3" x2="21" y2="21"></line>        </svg>`;      updateMuteIcon();
     }
 
     function playHeroMovie(movie) {
@@ -781,8 +922,7 @@
       updateMuteIcon();
       heroTitle.textContent = movie.title;
       heroDesc.textContent = movie.description;
-      heroMeta.innerHTML = `<span class="badge">${movie.year}</span><span class="badge">${movie.duration}</span><span class="badge">${(movie.genres||[]).slice(0,3).join(" • ")}</span>`;
-      
+      heroMeta.innerHTML = `<span class="badge">${movie.year}</span><span class="badge">${movie.duration}</span><span class="badge">${(movie.genres||[]).slice(0,3).join(" • ")}</span>`;      
       heroPlayBtn.onclick = () => {
          const movieUrl = movie.videoUrl || movie.trailerUrl;
          enterMovieMode(movieUrl, movie.id);
@@ -800,6 +940,13 @@
     /* LECTEUR */
     const playerOverlay = document.getElementById("playerOverlay");
     const fullPlayer = document.getElementById("fullPlayer");
+    
+    // --- VIDEO PLAYER LOGIC ---
+    fullPlayer.onended = () => {
+        const currentMovie = movies.find(m => m.id === currentMovieId);
+        if(currentMovie) saveWatchProgress(fullPlayer.duration, fullPlayer.duration, true);
+        exitPlayer();
+    };
 
     async function enterMovieMode(url, movieId) {
         if(!url) return alert("Erreur: Lien vidéo manquant pour ce contenu.");
@@ -808,9 +955,12 @@
         document.getElementById("playerTitle").innerText = movies.find(m => m.id === movieId)?.title || "";
         fullPlayer.src = url;
         
-        const savedTime = userProgress[movieId] || 0;
-        if(savedTime > 5) { fullPlayer.currentTime = savedTime; showToast("Reprise..."); }
-        else fullPlayer.currentTime = 0;
+        const savedProgress = userProgress[movieId] || { time: 0, completed: false, duration: 0 };
+        if(savedProgress.time > 5 && !savedProgress.completed) { 
+            fullPlayer.currentTime = savedProgress.time; showToast("Reprise..."); 
+        } else {
+            fullPlayer.currentTime = 0;
+        }
         
         playerOverlay.classList.add("active");
         fullPlayer.play();
@@ -818,10 +968,23 @@
         isMoviePlaying = true;
         currentMovieId = movieId;
         
-        clearInterval(saveInterval);
-        saveInterval = setInterval(() => {
-           if(!fullPlayer.paused) saveWatchProgress(fullPlayer.currentTime);
-        }, 5000);
+        fullPlayer.onloadedmetadata = () => {
+             const movieDuration = fullPlayer.duration;
+             
+             clearInterval(saveInterval);
+             saveInterval = setInterval(() => {
+                if(!fullPlayer.paused) {
+                    const currentTime = fullPlayer.currentTime;
+                    const isFinished = currentTime > 0 && movieDuration > 0 && currentTime >= movieDuration * 0.98;
+                    
+                    saveWatchProgress(currentTime, movieDuration, isFinished);
+                    
+                    if(isFinished) exitPlayer();
+                }
+             }, 5000);
+        };
+        
+        if(fullPlayer.readyState >= 1) fullPlayer.onloadedmetadata();
     }
 
     window.exitPlayer = () => {
@@ -838,16 +1001,24 @@
     function renderAllRows() {
         sectionsContainer.innerHTML = "";
         
-        const resumeMovies = movies.filter(m => (userProgress[m.id] || 0) > 10);
+        // --- RESUME ROW ---
+        const resumeMovies = movies.filter(m => {
+            const progress = userProgress[m.id];
+            return progress && typeof progress === 'object' && progress.time > 10 && !progress.completed;
+        });
+        
         if(resumeMovies.length) sectionsContainer.appendChild(createRowHtml("Reprendre la lecture", resumeMovies, true));
         
-        // MA LISTE
+        // --- MY LIST ROW ---
         const myListMovies = movies.filter(m => userList.includes(m.id));
         if(myListMovies.length) sectionsContainer.appendChild(createRowHtml("Ma Liste", myListMovies, false));
 
+        // --- CATEGORY ROWS (SHUFFLED) ---
         getAllCategories().forEach(cat => {
-            const catMovies = movies.filter(m => (m.tags||[]).includes(cat.key));
-            if(catMovies.length) sectionsContainer.appendChild(createRowHtml(cat.label, catMovies, false));
+            let catMovies = movies.filter(m => (m.tags||[]).includes(cat.key));
+            const shuffledMovies = shuffle(catMovies);
+
+            if(shuffledMovies.length) sectionsContainer.appendChild(createRowHtml(cat.label, shuffledMovies, false));
         });
         
         document.querySelectorAll(".movie-card").forEach(card => {
@@ -862,37 +1033,53 @@
         const sec = document.createElement("section");
         const cards = moviesList.map(m => {
             let extra = "";
-            if(isResumeRow && userProgress[m.id]) {
-                extra = `<div class="progress-container"><div class="progress-fill" style="width: 40%"></div></div>`;
-            }
-            
-            // BOUTONS LISTE
-            const isInList = userList.includes(m.id);
-            const isMyListRow = (title === "Ma Liste");
-            let btnClass = "card-add-btn";
-            let btnIcon = "+";
-            
-            if(isInList) {
-                btnClass += " added";
-                btnIcon = "✓";
-                if(isMyListRow) {
-                    btnClass += " remove"; 
-                    btnIcon = "🗑"; 
-                }
-            }
+            let actionBtnHtml = ""; 
 
-            const addBtn = `<button class="${btnClass}" onclick="event.stopPropagation(); toggleMyList('${m.id}')">${btnIcon}</button>`;
+            if(isResumeRow) {
+                const progressData = userProgress[m.id] || {time: 0, duration: 0};
+                let progressPercent = 0;
+                
+                if(progressData.time > 0 && progressData.duration > 0) {
+                     progressPercent = (progressData.time / progressData.duration) * 100;
+                     if(progressPercent > 99) progressPercent = 99; 
+                }
+                
+                extra = `<div class="progress-container"><div class="progress-fill" style="width: ${progressPercent}%"></div></div>`;
+                
+                // Manual delete button for Resume row
+                actionBtnHtml = `<button class="card-add-btn remove" 
+                                onclick="event.stopPropagation(); removeFromWatchProgress('${m.id}')"
+                                style="bottom: 8px; right: 10px;" aria-label="Supprimer de la liste de reprise">✕</button>`; 
+            } else {
+                // My List button logic for other rows
+                const isInList = userList.includes(m.id);
+                const isMyListRow = (title === "Ma Liste");
+                let btnClass = "card-add-btn";
+                let btnIcon = "+";
+                let label = "Ajouter à Ma Liste";
+                
+                if(isInList) {
+                    btnClass += " added";
+                    btnIcon = "✓";
+                    label = "Retirer de Ma Liste";
+                    if(isMyListRow) {
+                        btnClass += " remove"; 
+                        btnIcon = "✕"; 
+                        label = "Supprimer de Ma Liste";
+                    }
+                }
+
+                actionBtnHtml = `<button class="${btnClass}" onclick="event.stopPropagation(); toggleMyList('${m.id}')" aria-label="${label}">${btnIcon}</button>`;
+            }
 
             return `
             <div class="movie-card" data-id="${m.id}">
-              <div class="poster-wrapper"><img src="${m.poster}" loading="lazy" onerror="this.src='https://placehold.co/200x300?text=No+Img'"></div>
-              ${extra}
-              ${addBtn}
-              <div class="movie-title-mini">${m.title}</div>
-            </div>`;
+              <div class="poster-wrapper"><img src="${m.poster}" loading="lazy" alt="${m.title} Affiche" onerror="this.src='https://placehold.co/200x300?text=No+Img'"></div>              ${extra}
+              ${actionBtnHtml} 
+              <div class="movie-title-mini">${m.title}</div>            </div>`;
         }).join("");
 
-        sec.innerHTML = `<div class="section-header"><h3 class="section-title">${title}</h3></div><div class="row-wrapper"><button class="scroll-btn left" onclick="scrollRow(this, -300)">‹</button><div class="movie-row">${cards}</div><button class="scroll-btn right" onclick="scrollRow(this, 300)">›</button></div>`;
+        sec.innerHTML = `<div class="section-header"><h3 class="section-title">${title}</h3></div><div class="row-wrapper"><button class="scroll-btn left" onclick="scrollRow(this, -300)" aria-label="Défiler à gauche">‹</button><div class="movie-row">${cards}</div><button class="scroll-btn right" onclick="scrollRow(this, 300)" aria-label="Défiler à droite">›</button></div>`;
         return sec;
     }
 
@@ -904,6 +1091,7 @@
     const overlay = document.getElementById("overlay");
     function openOverlay(m) {
       document.getElementById("overlayPoster").src = m.poster;
+      document.getElementById("overlayPoster").alt = `Affiche de ${m.title}`;
       document.getElementById("overlayTitle").textContent = m.title;
       document.getElementById("overlayDesc").textContent = m.description;
       document.getElementById("overlayActors").textContent = (m.cast||[]).join(", ");
@@ -936,14 +1124,13 @@
       overlay.classList.remove("overlay-hidden");
     }
 
-    // MISE À JOUR OPTIMISTE (INSTANTANÉE)
+    // MISE À JOUR OPTIMISTE (INSTANTANÉE)    
     async function toggleMyList(movieId) {
         if(!currentUserData) { showToast("Connectez-vous !"); return; }
 
         const index = userList.indexOf(movieId);
         let msg = "";
 
-        // 1. Modif Locale
         if(index > -1) {
             userList.splice(index, 1);
             msg = "Retiré de la liste";
@@ -952,18 +1139,15 @@
             msg = "Ajouté à la liste";
         }
 
-        // 2. Update UI Immédiat
         showToast(msg);
         renderAllRows(); 
         
-        // 3. Update bouton overlay si ouvert
         const btnList = document.getElementById("overlayMyListBtn");
         if(btnList && !document.getElementById("overlay").classList.contains("overlay-hidden")) {
              const isIn = userList.includes(movieId);
              btnList.textContent = isIn ? "✓ Ma Liste" : "+ Ma Liste";
         }
 
-        // 4. Save DB Background
         try {
             await db.collection("users").doc(currentUserData.uid).set({ myList: userList }, { merge: true });
         } catch(e) { console.error("Erreur sauvegarde liste:", e); }
@@ -1037,8 +1221,7 @@
       if(await saveCategory({ key: k, label: l })) { customCategories.push({ key: k, label: l }); renderCatList(); renderAllRows(); document.getElementById("categoryForm").reset(); }
     };
     function renderCatList() {
-      document.getElementById("categoryList").innerHTML = customCategories.map(c => `<div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.8rem;"><span>${c.label} (${c.key})</span><span style="color:red; cursor:pointer;" onclick="removeCat('${c.key}')">Suppr.</span></div>`);
-    }
+      document.getElementById("categoryList").innerHTML = customCategories.map(c => `<div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.8rem;"><span>${c.label} (${c.key})</span><span style="color:red; cursor:pointer;" onclick="removeCat('${c.key}')">Suppr.</span></div>`);    }    
     window.removeCat = async (k) => {
       if(!confirm("Supprimer ?")) return;
       if(await deleteCategory(k)) { customCategories = customCategories.filter(c => c.key !== k); renderCatList(); renderAllRows(); }
@@ -1078,6 +1261,4 @@
     }
 
     document.addEventListener("DOMContentLoaded", initApp);
-  </script>
-</body>
-</html>
+  </script></body></html>
