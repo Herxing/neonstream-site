@@ -373,7 +373,7 @@
     <div class="overlay-dialog">
       <button id="overlayClose" class="overlay-close">✕</button>
       <div class="overlay-layout">
-        <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche" onerror="this.src='https://via.placeholder.com/300x450?text=No+Poster'"></div>
+        <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche" onerror="this.src='https://placehold.co/300x450?text=No+Poster'"></div>
         <div>
           <h2 id="overlayTitle" class="overlay-title">Titre</h2>
           <div id="overlayMeta" class="overlay-meta"></div>
@@ -881,7 +881,7 @@
             return `
             <div class="movie-card" data-id="${m.id}">
               <div class="poster-wrapper">
-                <img src="${m.poster}" loading="lazy" alt="${m.title}" onerror="this.src='https://via.placeholder.com/200x300?text=No+Img'">
+                <img src="${m.poster}" loading="lazy" alt="${m.title}" onerror="this.src='https://placehold.co/200x300?text=No+Img'">
               </div>
               ${extra}
               <div class="movie-title-mini">${m.title}</div>
