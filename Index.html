@@ -501,7 +501,7 @@
     const auth = firebase.auth();
 
     // --- SÉCURITÉ ADMIN ---
-    const ADMIN_EMAILS = ["herxingapp@gmail.com"]; 
+    const ADMIN_UIDS = ["KR7yODJYmefEw9D06poPRNIQF7w1"];
 
     const builtInCategories = [
       { key: "new", label: "Nouveautés" },
@@ -527,7 +527,7 @@
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 currentUserData = user;
-                isDev = ADMIN_EMAILS.includes(user.email);
+                isDev = ADMIN_UIDS.includes(user.uid);
                 await loadUserData(); 
             } else {
                 currentUserData = null;
