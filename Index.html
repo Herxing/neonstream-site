@@ -5,6 +5,17 @@
   <title>NeonStream - Accueil</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+  <meta name="description" content="NeonStream - Regardez vos films et séries préférés en streaming HD. Interface Cyberpunk, lecture fluide et gratuite.">
+  <meta name="keywords" content="streaming, films, séries, cyberpunk, gratuit, hd, vf">
+  <meta name="author" content="NeonStream">
+
+  <meta property="og:title" content="NeonStream - Streaming Unlimited">
+  <meta property="og:description" content="Découvrez notre catalogue de films en style Cyberpunk.">
+  <meta property="og:image" content="https://placehold.co/1200x630/05030a/a855f7?text=NeonStream"> <meta property="og:url" content="https://neonstream-official.netlify.app">
+  <meta property="og:type" content="website">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -52,7 +63,7 @@
 
     .header-left, .header-right { display: flex; align-items: center; gap: 15px; }
     
-    /* LOGO CLICKABLE POUR RESET */
+    /* LOGO RESET */
     .logo { display: flex; align-items: center; gap: 10px; cursor: pointer; transition: transform 0.2s; }
     .logo:active { transform: scale(0.95); }
 
@@ -164,36 +175,25 @@
     }
     .btn-hero-info:hover { background: rgba(109, 109, 110, 0.9); transform: scale(1.05); }
     
-    /* --- MODIFICATION BOUTON MUTE --- */
+    /* BOUTON MUTE SVG */
     .btn-hero-mute {
       width: 45px; height: 45px; border-radius: 50%; background: rgba(255,255,255,0.1);
       border: 1px solid rgba(255,255,255,0.2); color: #fff; cursor: pointer;
       display: flex; align-items: center; justify-content: center; 
-      /* font-size retiré car on utilise un SVG */
       transition: background 0.2s;
     }
     .btn-hero-mute:hover { background: rgba(255,255,255,0.3); }
-
-    /* Styles pour l'animation SVG du mute */
-    .mute-svg { width: 22px; height: 22px; fill: currentColor; }
     
-    /* La barre diagonale (cross) */
+    /* ANIMATION SVG MUTE */
+    .mute-svg { width: 22px; height: 22px; fill: currentColor; }
     .mute-svg .cross {
         transition: stroke-dashoffset 0.3s ease;
         stroke: currentColor; stroke-width: 2; stroke-linecap: round;
-        stroke-dasharray: 26; /* longueur approx de la diagonale */
-        stroke-dashoffset: 26; /* Caché par défaut (offset = longueur) */
+        stroke-dasharray: 26; stroke-dashoffset: 26;
     }
-    /* Quand le bouton a la classe 'is-muted', on affiche la barre */
-    .btn-hero-mute.is-muted .cross {
-        stroke-dashoffset: 0;
-    }
-    
-    /* Les ondes sonores */
+    .btn-hero-mute.is-muted .cross { stroke-dashoffset: 0; }
     .mute-svg .waves { transition: opacity 0.3s ease; opacity: 1; }
-    /* Quand muté, on cache les ondes */
     .btn-hero-mute.is-muted .waves { opacity: 0; }
-
 
     /* --- CONTENU --- */
     .main-content {
@@ -227,7 +227,7 @@
     .movie-card {
       flex: 0 0 auto; width: 200px; cursor: pointer;
       transition: transform 0.3s, opacity 0.3s;
-      position: relative; /* Pour la barre de progression */
+      position: relative;
     }
     .movie-card.dimmed { opacity: 0.2; filter: grayscale(1); pointer-events: none; }
 
@@ -248,7 +248,7 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; opacity: 0.8;
     }
 
-    /* BARRE DE PROGRESSION (NOUVEAU) */
+    /* BARRE DE PROGRESSION */
     .progress-container {
       position: absolute; bottom: 30px; left: 0; width: 100%; height: 4px;
       background: rgba(0,0,0,0.6); z-index: 25; pointer-events: none;
@@ -257,6 +257,17 @@
       height: 100%; background: var(--accent); width: 0%;
       box-shadow: 0 0 5px var(--accent);
     }
+
+    /* BOUTON MA LISTE SUR AFFICHE */
+    .card-add-btn {
+        position: absolute; bottom: 40px; right: 10px; width: 30px; height: 30px; border-radius: 50%;
+        background: rgba(0,0,0,0.8); border: 1px solid var(--accent); color: var(--accent);
+        display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+        opacity: 0; transform: translateY(10px); transition: 0.3s; z-index: 25;
+    }
+    .card-add-btn:hover { background: var(--accent); color: white; }
+    .movie-card:hover .card-add-btn { opacity: 1; transform: translateY(0); }
+    .card-add-btn.added { background: var(--accent); color: white; }
 
     .scroll-btn {
       position: absolute; top: 45%; transform: translateY(-50%); z-index: 30;
@@ -302,7 +313,6 @@
     }
     .toast.show { opacity: 1; }
     
-    /* TMDB RESULT */
     .tmdb-chip {
         display: inline-block; padding: 5px; margin-right: 5px; cursor: pointer; border: 1px solid #444; border-radius: 4px; background: #222; font-size: 0.8rem;
     }
@@ -321,7 +331,6 @@
       .scroll-btn { width: 36px; height: 36px; font-size: 1.2rem; opacity: 0.7; }
     }
   </style>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
 </head>
 <body>
 
@@ -523,6 +532,16 @@
     function shuffle(array) { return [...array].sort(() => Math.random() - 0.5); }
     function movieHasPlayableVideo(m) { return !!(m.trailerUrl || m.videoUrl); }
 
+    // --- FONCTION RESET TO HOME ---
+    window.resetToHome = () => {
+        // Stop si film en cours
+        if(isMoviePlaying) exitMovieMode();
+        // Ferme tout
+        closeAllOverlays();
+        window.scrollTo({top:0, behavior:'smooth'});
+        initHero();
+    };
+
     // --- INITIALISATION ---
     function initApp() {
         auth.onAuthStateChanged(async (user) => {
@@ -559,7 +578,7 @@
         }
     }
 
-    // --- TMDB LOGIC (inchangé) ---
+    // --- TMDB LOGIC ---
     document.getElementById("tmdbSearchBtn").onclick = async () => {
         const query = document.getElementById("tmdbSearchInput").value;
         const resDiv = document.getElementById("tmdbResults");
@@ -569,18 +588,12 @@
             const req = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=fr-FR&query=${encodeURIComponent(query)}`);
             const data = await req.json();
             resDiv.innerHTML = "";
-            if(!data.results || data.results.length === 0) {
-                resDiv.innerHTML = "Aucun résultat";
-                return;
-            }
+            if(!data.results || data.results.length === 0) { resDiv.innerHTML = "Aucun résultat"; return; }
             data.results.slice(0, 5).forEach(m => {
                if(!m.poster_path) return;
                const img = document.createElement("img");
                img.src = TMDB_IMG_BASE + m.poster_path;
-               img.style.height = "80px";
-               img.style.cursor = "pointer";
-               img.style.borderRadius = "4px";
-               img.style.border = "2px solid transparent";
+               img.style.height = "80px"; img.style.cursor = "pointer"; img.style.borderRadius = "4px";
                img.onclick = () => fillFormWithTMDB(m);
                resDiv.appendChild(img);
             });
@@ -594,74 +607,46 @@
         document.getElementById("fieldPoster").value = TMDB_IMG_BASE + tmdbData.poster_path;
         document.getElementById("fieldTags").value = "new"; 
         fetch(`https://api.themoviedb.org/3/movie/${tmdbData.id}?api_key=${TMDB_API_KEY}&language=fr-FR`)
-            .then(r=>r.json())
-            .then(detail => {
+            .then(r=>r.json()).then(detail => {
                 if(detail.runtime) {
                     const h = Math.floor(detail.runtime / 60);
                     const m = detail.runtime % 60;
                     document.getElementById("fieldDuration").value = `${h}h${m < 10 ? '0'+m : m}`;
                 }
-                if(detail.genres) {
-                    document.getElementById("fieldGenres").value = detail.genres.map(g => g.name).join(", ");
-                }
+                if(detail.genres) document.getElementById("fieldGenres").value = detail.genres.map(g => g.name).join(", ");
             });
-        alert("Infos remplies ! Ajoutez maintenant le lien de la vidéo (MP4).");
+        alert("Infos remplies !");
     }
 
-    // --- CHARGEMENT DONNÉES (inchangé) ---
     async function loadMovies() {
       movies = [];
-      try {
-        const snap = await db.collection("movies").get();
-        snap.forEach(doc => {
+      const snap = await db.collection("movies").get();
+      snap.forEach(doc => {
           const d = doc.data();
           d._searchStr = normalizeText([d.title, (d.genres||[]).join(" "), (d.cast||[]).join(" "), d.year].join(" "));
           movies.push(d);
-        });
-      } catch(e) { console.error("Erreur chargement films:", e); }
+      });
     }
 
     async function saveMovie(m) {
         if(!isDev) return; 
         let toSave = {...m}; delete toSave._searchStr;
-        try {
-            if(editingMovieId) {
-                await db.collection("movies").doc(editingMovieId).update(toSave);
-            } else {
-                await db.collection("movies").doc(m.id).set(toSave);
-            }
-            return true;
-        } catch(e) {
-            console.error("Erreur sauvegarde:", e);
-            alert("Erreur: Vous n'avez pas la permission (êtes-vous admin ?)");
-            return false;
-        }
+        if(editingMovieId) await db.collection("movies").doc(editingMovieId).update(toSave);
+        else await db.collection("movies").doc(m.id).set(toSave);
+        return true;
     }
 
-    async function deleteMovie(id) { 
-        try { await db.collection("movies").doc(id).delete(); return true; } 
-        catch(e) { alert("Erreur suppression: Permission refusée."); return false; }
-    }
-
+    async function deleteMovie(id) { await db.collection("movies").doc(id).delete(); return true; }
     async function loadCategories() {
       customCategories = [];
       const snap = await db.collection("categories").get();
       snap.forEach(d => customCategories.push(d.data()));
     }
-    
-    async function saveCategory(c) { 
-        try { await db.collection("categories").doc(c.key).set(c); return true; } 
-        catch(e) { alert("Erreur ajout catégorie"); return false; }
-    }
-    
-    async function deleteCategory(k) { 
-        try { await db.collection("categories").doc(k).delete(); return true; }
-        catch(e) { alert("Erreur suppression"); return false; }
-    }
-
+    async function saveCategory(c) { await db.collection("categories").doc(c.key).set(c); return true; }
+    async function deleteCategory(k) { await db.collection("categories").doc(k).delete(); return true; }
     function getAllCategories() { return [...builtInCategories, ...customCategories]; }
 
-    // --- HERO & LECTEUR VIDEO ---
+    /* --- HERO & VIDEO --- */
     const heroVideo = document.getElementById("heroTrailer");
     const heroTitle = document.getElementById("heroTitle");
     const heroMeta = document.getElementById("heroMeta");
@@ -671,54 +656,27 @@
     const heroMuteBtn = document.getElementById("heroMuteBtn");
     const heroContainer = document.getElementById("heroContainer");
     
-    let trailerPool = [];
-    let currentHeroIndex = 0;
-    let isMoviePlaying = false; 
-    let currentMovieId = null; 
-    let saveInterval = null;
+    let trailerPool = [], currentHeroIndex = 0, isMoviePlaying = false, currentMovieId = null, saveInterval = null;
 
-    // --- SAUVEGARDE PROGRESSION ---
     function saveWatchProgress(time) {
       if(!currentUserData || !currentMovieId) return; 
-      userProgress[currentMovieId] = time; // Update local instantané
-      const userRef = db.collection("users").doc(currentUserData.uid);
-      userRef.set({
-        watchProgress: {
-          [currentMovieId]: time
-        }
-      }, { merge: true });
-    }
-
-    async function getWatchProgress(movieId) {
-      if(!currentUserData) return 0;
-      // On regarde d'abord en local pour être rapide
-      if(userProgress[movieId]) return userProgress[movieId];
-      return 0;
+      userProgress[currentMovieId] = time; 
+      db.collection("users").doc(currentUserData.uid).set({ watchProgress: { [currentMovieId]: time } }, { merge: true });
     }
 
     function initHero() {
       trailerPool = shuffle(movies.filter(movieHasPlayableVideo));
-      if(!trailerPool.length) {
-        heroTitle.textContent = "Bienvenue";
-        heroDesc.textContent = "Ajoutez des films...";
-        return;
-      }
+      if(!trailerPool.length) { heroTitle.textContent = "Bienvenue"; return; }
       playHeroMovie(trailerPool[0]);
       
       heroVideo.onended = () => {
-        if(isMoviePlaying) {
-            exitMovieMode();
-        } else {
+        if(!isMoviePlaying) {
             currentHeroIndex = (currentHeroIndex + 1) % trailerPool.length;
             playHeroMovie(trailerPool[currentHeroIndex]);
         }
       };
 
-      heroVideo.addEventListener('pause', () => {
-         if(isMoviePlaying) saveWatchProgress(heroVideo.currentTime);
-      });
-
-      // INIT MUTE BUTTON AVEC SVG
+      // INIT MUTE BUTTON
       heroVideo.muted = true;
       heroMuteBtn.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="mute-svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -727,65 +685,6 @@
           <line class="cross" x1="3" y1="3" x2="21" y2="21"></line>
         </svg>`;
       updateMuteIcon();
-    }
-
-    async function enterMovieMode(url, movieId) {
-        if(!currentUserData) {
-            showToast("Connectez-vous pour sauvegarder votre progression");
-        }
-
-        isMoviePlaying = true;
-        currentMovieId = movieId;
-        
-        heroContainer.classList.add('playing-mode');
-        document.body.classList.add('cinema-mode'); 
-        hideHeader(); 
-        
-        const savedTime = await getWatchProgress(movieId);
-        heroVideo.src = url;
-        
-        const onReady = () => {
-            if(savedTime > 5) {
-               heroVideo.currentTime = savedTime;
-               showToast("Reprise de la lecture...");
-            } else {
-               heroVideo.currentTime = 0;
-            }
-            heroVideo.muted = false;
-            heroVideo.controls = true;
-            heroVideo.style.objectFit = 'contain';
-            heroVideo.play().catch(e => console.log("Autoplay bloqué", e));
-            heroVideo.removeEventListener('loadedmetadata', onReady);
-        };
-        heroVideo.addEventListener('loadedmetadata', onReady);
-        
-        window.scrollTo({top:0, behavior:'smooth'});
-        
-        if(saveInterval) clearInterval(saveInterval);
-        saveInterval = setInterval(() => {
-           if(isMoviePlaying && !heroVideo.paused) saveWatchProgress(heroVideo.currentTime);
-        }, 10000);
-    }
-
-    function exitMovieMode() {
-        if(isMoviePlaying) saveWatchProgress(heroVideo.currentTime);
-        if(saveInterval) clearInterval(saveInterval);
-
-        isMoviePlaying = false;
-        currentMovieId = null;
-        
-        if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
-        
-        heroContainer.classList.remove('playing-mode');
-        document.body.classList.remove('cinema-mode');
-        
-        heroVideo.controls = false;
-        heroVideo.style.objectFit = 'cover';
-        heroVideo.muted = true;
-        
-        playHeroMovie(trailerPool[currentHeroIndex]);
-        showHeader();
-        renderAllRows(); // Rafraichir pour la barre de progression
     }
 
     function playHeroMovie(movie) {
@@ -806,17 +705,74 @@
     }
     
     heroMuteBtn.onclick = () => { heroVideo.muted = !heroVideo.muted; updateMuteIcon(); };
-    
-    // UPDATE ICONE MUTE (AVEC CLASSE CSS POUR ANIMATION)
     function updateMuteIcon() { 
-        if(heroVideo.muted) {
-            heroMuteBtn.classList.add('is-muted');
-        } else {
-            heroMuteBtn.classList.remove('is-muted');
-        }
+        if(heroVideo.muted) heroMuteBtn.classList.add('is-muted');
+        else heroMuteBtn.classList.remove('is-muted');
     }
 
-    // --- HEADER AUTO-HIDE (inchangé) ---
+    /* --- LECTEUR (LOGIQUE MISE A JOUR) --- */
+    async function enterMovieMode(url, movieId) {
+        if(!currentUserData) showToast("Connectez-vous pour sauvegarder");
+        
+        isMoviePlaying = true;
+        currentMovieId = movieId;
+        
+        // SEO TITRE
+        const m = movies.find(x => x.id === movieId);
+        if(m) document.title = m.title + " - NeonStream";
+
+        heroContainer.classList.add('playing-mode');
+        document.body.classList.add('cinema-mode'); 
+        hideHeader(); 
+        
+        const savedTime = userProgress[movieId] || 0;
+        heroVideo.src = url;
+        
+        const onReady = () => {
+            if(savedTime > 5) { heroVideo.currentTime = savedTime; showToast("Reprise..."); }
+            else heroVideo.currentTime = 0;
+            
+            heroVideo.muted = false;
+            heroVideo.controls = true;
+            heroVideo.style.objectFit = 'contain';
+            heroVideo.play();
+            heroVideo.removeEventListener('loadedmetadata', onReady);
+        };
+        heroVideo.addEventListener('loadedmetadata', onReady);
+        
+        window.scrollTo({top:0, behavior:'smooth'});
+        
+        clearInterval(saveInterval);
+        saveInterval = setInterval(() => {
+           if(!heroVideo.paused) saveWatchProgress(heroVideo.currentTime);
+        }, 5000);
+    }
+
+    function exitMovieMode() {
+        if(isMoviePlaying) saveWatchProgress(heroVideo.currentTime);
+        clearInterval(saveInterval);
+
+        isMoviePlaying = false;
+        currentMovieId = null;
+        
+        // RESET TITLE
+        document.title = "NeonStream - Accueil";
+
+        if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+        
+        heroContainer.classList.remove('playing-mode');
+        document.body.classList.remove('cinema-mode');
+        
+        heroVideo.controls = false;
+        heroVideo.style.objectFit = 'cover';
+        heroVideo.muted = true;
+        
+        playHeroMovie(trailerPool[currentHeroIndex]);
+        showHeader();
+        renderAllRows();
+    }
+
+    // --- HEADER AUTO-HIDE ---
     let headerTimeout;
     const header = document.getElementById('mainHeader');
     const searchInputEl = document.getElementById('searchInput');
@@ -836,33 +792,22 @@
       setTimeout(()=>t.classList.remove("show"), 3000);
     }
 
-    // --- RENDU SECTIONS (MODIFIÉ POUR INCLURE MA LISTE & REPRENDRE) ---
+    // --- RENDU SECTIONS ---
     const sectionsContainer = document.getElementById("sectionsContainer");
-
     function renderAllRows() {
         sectionsContainer.innerHTML = "";
-
-        // 1. REPRENDRE LA LECTURE
-        const resumeMovies = movies.filter(m => (userProgress[m.id] || 0) > 10); // > 10 sec
-        if(resumeMovies.length > 0) {
-            sectionsContainer.appendChild(createRowHtml("Reprendre la lecture", resumeMovies, true));
-        }
-
-        // 2. MA LISTE
+        
+        const resumeMovies = movies.filter(m => (userProgress[m.id] || 0) > 10);
+        if(resumeMovies.length) sectionsContainer.appendChild(createRowHtml("Reprendre la lecture", resumeMovies, true));
+        
         const myListMovies = movies.filter(m => userList.includes(m.id));
-        if(myListMovies.length > 0) {
-            sectionsContainer.appendChild(createRowHtml("Ma Liste", myListMovies, false));
-        }
+        if(myListMovies.length) sectionsContainer.appendChild(createRowHtml("Ma Liste", myListMovies, false));
 
-        // 3. CATEGORIES STANDARD
         getAllCategories().forEach(cat => {
             const catMovies = movies.filter(m => (m.tags||[]).includes(cat.key));
-            if(catMovies.length) {
-                sectionsContainer.appendChild(createRowHtml(cat.label, catMovies, false));
-            }
+            if(catMovies.length) sectionsContainer.appendChild(createRowHtml(cat.label, catMovies, false));
         });
         
-        // Attacher les événements de clic
         document.querySelectorAll(".movie-card").forEach(card => {
             card.addEventListener("click", () => {
                 const m = movies.find(x => x.id === card.dataset.id);
@@ -876,83 +821,52 @@
         const cards = moviesList.map(m => {
             let extra = "";
             if(isResumeRow && userProgress[m.id]) {
-                // Barre de progression (style violet accent)
                 extra = `<div class="progress-container"><div class="progress-fill" style="width: 40%"></div></div>`;
             }
+            // Add Button on Poster
+            const isInList = userList.includes(m.id);
+            const btnClass = isInList ? "card-add-btn added" : "card-add-btn";
+            const btnIcon = isInList ? "✓" : "+";
+            const addBtn = `<button class="${btnClass}" onclick="event.stopPropagation(); toggleMyList('${m.id}', this)">${btnIcon}</button>`;
+
             return `
             <div class="movie-card" data-id="${m.id}">
-              <div class="poster-wrapper">
-                <img src="${m.poster}" loading="lazy" alt="${m.title}" onerror="this.src='https://placehold.co/200x300?text=No+Img'">
-              </div>
+              <div class="poster-wrapper"><img src="${m.poster}" loading="lazy" onerror="this.src='https://placehold.co/200x300?text=No+Img'"></div>
               ${extra}
+              ${addBtn}
               <div class="movie-title-mini">${m.title}</div>
             </div>`;
         }).join("");
 
-        sec.innerHTML = `
-          <div class="section-header"><h3 class="section-title">${title}</h3></div>
-          <div class="row-wrapper">
-            <button class="scroll-btn left" onclick="scrollRow(this, -300)">‹</button>
-            <div class="movie-row">${cards}</div>
-            <button class="scroll-btn right" onclick="scrollRow(this, 300)">›</button>
-          </div>
-        `;
+        sec.innerHTML = `<div class="section-header"><h3 class="section-title">${title}</h3></div><div class="row-wrapper"><button class="scroll-btn left" onclick="scrollRow(this, -300)">‹</button><div class="movie-row">${cards}</div><button class="scroll-btn right" onclick="scrollRow(this, 300)">›</button></div>`;
         return sec;
     }
 
     window.scrollRow = (btn, amount) => {
-      const wrapper = btn.closest('.row-wrapper');
-      const row = wrapper.querySelector('.movie-row');
-      row.scrollBy({ left: amount, behavior: 'smooth' });
+      btn.closest('.row-wrapper').querySelector('.movie-row').scrollBy({ left: amount, behavior: 'smooth' });
     };
 
-    // --- RECHERCHE SITE (inchangé) ---
+    // --- RECHERCHE ---
     const searchResults = document.getElementById("searchResults");
     searchInputEl.addEventListener("input", (e) => {
       const q = normalizeText(e.target.value);
       const cards = document.querySelectorAll(".movie-card");
-      if(!q) {
-        cards.forEach(c => c.classList.remove("dimmed"));
-        searchResults.classList.remove("active");
-        return;
-      }
+      if(!q) { cards.forEach(c => c.classList.remove("dimmed")); searchResults.classList.remove("active"); return; }
       const matches = movies.filter(m => m._searchStr && m._searchStr.includes(q));
       const matchIds = new Set(matches.map(m => m.id));
-      cards.forEach(c => {
-        if(matchIds.has(c.dataset.id)) c.classList.remove("dimmed");
-        else c.classList.add("dimmed");
-      });
-      renderDropdown(matches);
-    });
-
-    function renderDropdown(list) {
+      cards.forEach(c => { if(matchIds.has(c.dataset.id)) c.classList.remove("dimmed"); else c.classList.add("dimmed"); });
       searchResults.innerHTML = "";
-      if(!list.length) {
-        searchResults.innerHTML = `<div class="search-no-result">Aucun résultat</div>`;
-      } else {
-        list.forEach(m => {
-          const div = document.createElement("div");
-          div.className = "search-result-item";
-          div.innerHTML = `
-            <img class="search-result-thumb" src="${m.poster}">
-            <div class="search-result-info">
-              <div class="search-result-title">${m.title}</div>
-              <div class="search-result-meta">${m.year}</div>
-            </div>
-          `;
+      matches.forEach(m => {
+          const div = document.createElement("div"); div.className = "search-result-item";
+          div.innerHTML = `<img class="search-result-thumb" src="${m.poster}"><div class="search-result-info"><div class="search-result-title">${m.title}</div><div class="search-result-meta">${m.year}</div></div>`;
           div.onclick = () => { openOverlay(m); searchResults.classList.remove("active"); };
           searchResults.appendChild(div);
-        });
-      }
+      });
       searchResults.classList.add("active");
-    }
-    document.addEventListener("click", (e) => {
-      if(!searchInputEl.contains(e.target) && !searchResults.contains(e.target)) {
-        searchResults.classList.remove("active");
-      }
     });
+    document.addEventListener("click", (e) => { if(!searchInputEl.contains(e.target) && !searchResults.contains(e.target)) searchResults.classList.remove("active"); });
 
-    // --- OVERLAYS SITE (MODIFIÉ pour MA LISTE) ---
+    // --- OVERLAYS ---
     const overlay = document.getElementById("overlay");
     function openOverlay(m) {
       document.getElementById("overlayPoster").src = m.poster;
@@ -961,19 +875,9 @@
       document.getElementById("overlayActors").textContent = (m.cast||[]).join(", ");
       document.getElementById("overlayMeta").textContent = `${m.year} • ${m.duration} • ${(m.genres||[]).join(", ")}`;
       
-      document.getElementById("overlayWatchMovieBtn").onclick = () => {
-         const movieUrl = m.videoUrl || m.trailerUrl;
-         closeAllOverlays();
-         enterMovieMode(movieUrl, m.id);
-      };
+      document.getElementById("overlayWatchMovieBtn").onclick = () => { closeAllOverlays(); enterMovieMode(m.videoUrl || m.trailerUrl, m.id); };
+      document.getElementById("overlayWatchTrailerBtn").onclick = () => { closeAllOverlays(); enterMovieMode(m.trailerUrl || m.videoUrl, m.id); };
       
-      document.getElementById("overlayWatchTrailerBtn").onclick = () => {
-         const movieUrl = m.trailerUrl || m.videoUrl;
-         closeAllOverlays();
-         enterMovieMode(movieUrl, m.id); 
-      };
-      
-      // LOGIQUE BOUTON MA LISTE
       const btnList = document.getElementById("overlayMyListBtn");
       const isInList = userList.includes(m.id);
       btnList.textContent = isInList ? "✓ Ma Liste" : "+ Ma Liste";
@@ -981,79 +885,40 @@
 
       const btnDel = document.getElementById("overlayDeleteBtn");
       const btnEdit = document.getElementById("overlayEditBtn");
-      
       if(isDev) {
-        btnDel.classList.remove("hidden");
-        btnEdit.classList.remove("hidden");
-        
-        btnDel.onclick = async () => {
-          if(!confirm("Supprimer ce film définitivement ?")) return;
-          if(await deleteMovie(m.id)) {
-              location.reload();
-          }
-        }
-        
-        btnEdit.onclick = () => {
-           closeAllOverlays();
-           openAdmin(m.type, m);
-        }
-      } else { 
-        btnDel.classList.add("hidden"); 
-        btnEdit.classList.add("hidden"); 
-      }
-      
+        btnDel.classList.remove("hidden"); btnEdit.classList.remove("hidden");
+        btnDel.onclick = async () => { if(confirm("Supprimer ?")) if(await deleteMovie(m.id)) location.reload(); }
+        btnEdit.onclick = () => { closeAllOverlays(); openAdmin(m.type, m); }
+      } else { btnDel.classList.add("hidden"); btnEdit.classList.add("hidden"); }
       overlay.classList.remove("overlay-hidden");
     }
 
     async function toggleMyList(movieId, btnElement) {
         if(!currentUserData) { showToast("Connectez-vous !"); return; }
-        
         const index = userList.indexOf(movieId);
-        if(index > -1) {
-            userList.splice(index, 1);
-            btnElement.textContent = "+ Ma Liste";
-            showToast("Retiré de la liste");
-        } else {
-            userList.push(movieId);
-            btnElement.textContent = "✓ Ma Liste";
-            showToast("Ajouté à la liste");
-        }
-        
-        // Sauvegarde Firebase
-        await db.collection("users").doc(currentUserData.uid).update({
-            myList: userList
-        });
-        
-        renderAllRows(); // Mettre à jour la ligne sur l'accueil
+        if(index > -1) { userList.splice(index, 1); if(btnElement) btnElement.textContent = "+ Ma Liste"; showToast("Retiré"); }
+        else { userList.push(movieId); if(btnElement) btnElement.textContent = "✓ Ma Liste"; showToast("Ajouté"); }
+        await db.collection("users").doc(currentUserData.uid).update({ myList: userList });
+        renderAllRows();
     }
 
     function closeAllOverlays() { document.querySelectorAll(".overlay-backdrop").forEach(el => el.classList.add("overlay-hidden")); }
     document.querySelectorAll(".overlay-close").forEach(btn => btn.onclick = closeAllOverlays);
 
-    // --- GESTION ADMIN (UI) (inchangé) ---
-    const adminOverlay = document.getElementById("adminOverlay");
-    const catOverlay = document.getElementById("categoryOverlay");
-    const accountOverlay = document.getElementById("accountOverlay");
-    
-    document.getElementById("addMovieBtn").onclick = () => { openAdmin("film"); };
-    document.getElementById("addSeriesBtn").onclick = () => { openAdmin("serie"); };
+    // --- ADMIN ---
+    const adminOverlay = document.getElementById("adminOverlay"), catOverlay = document.getElementById("categoryOverlay"), accountOverlay = document.getElementById("accountOverlay");
+    document.getElementById("addMovieBtn").onclick = () => openAdmin("film");
+    document.getElementById("addSeriesBtn").onclick = () => openAdmin("serie");
     document.getElementById("addCategoryBtn").onclick = () => { catOverlay.classList.remove("overlay-hidden"); renderCatList(); };
     document.getElementById("accountBtn").onclick = () => accountOverlay.classList.remove("overlay-hidden");
 
-    let currentAdminType = "film";
-    let editingMovieId = null;
-
+    let currentAdminType = "film", editingMovieId = null;
     function openAdmin(type, movieToEdit = null) {
       if(!isDev) return;
-      currentAdminType = type;
-      document.getElementById("adminForm").reset();
-      document.getElementById("tmdbResults").innerHTML = ""; 
-      
+      currentAdminType = type; document.getElementById("adminForm").reset(); document.getElementById("tmdbResults").innerHTML = ""; 
       if(movieToEdit) {
          editingMovieId = movieToEdit.id;
-         document.getElementById("adminTitle").textContent = "Modifier";
-         document.getElementById("adminCreate").textContent = "Mettre à jour";
-         
+         document.getElementById("adminTitle").textContent = "Modifier"; document.getElementById("adminCreate").textContent = "Mettre à jour";
          document.getElementById("fieldName").value = movieToEdit.title;
          document.getElementById("fieldYear").value = movieToEdit.year;
          document.getElementById("fieldDuration").value = movieToEdit.duration;
@@ -1064,41 +929,30 @@
          document.getElementById("fieldTrailer").value = movieToEdit.trailerUrl;
          document.getElementById("fieldMovieUrl").value = movieToEdit.videoUrl;
          document.getElementById("fieldDescription").value = movieToEdit.description;
-         
       } else {
-         editingMovieId = null;
-         document.getElementById("adminTitle").textContent = type === 'film' ? "Ajouter Film" : "Ajouter Série";
-         document.getElementById("adminCreate").textContent = "Ajouter";
+         editingMovieId = null; document.getElementById("adminTitle").textContent = "Ajouter"; document.getElementById("adminCreate").textContent = "Ajouter";
       }
-      
       adminOverlay.classList.remove("overlay-hidden");
     }
 
     document.getElementById("adminForm").onsubmit = async (e) => {
       e.preventDefault();
       const title = document.getElementById("fieldName").value;
-      
       const newMovie = {
         id: editingMovieId ? editingMovieId : slugify(title) + "-" + Date.now(),
-        type: currentAdminType, 
-        title: title,
+        type: currentAdminType, title: title,
         year: parseInt(document.getElementById("fieldYear").value), 
         duration: document.getElementById("fieldDuration").value,
         genres: document.getElementById("fieldGenres").value.split(",").map(s=>s.trim()).filter(Boolean),
-        tags: document.getElementById("fieldTags").value.split(",").map(s=>s.trim()).filter(Boolean),
+        tags: document.getElementById("fieldTags").value.split(",").map(s=>s.trim().toLowerCase()).filter(Boolean),
         cast: document.getElementById("fieldCast").value.split(",").map(s=>s.trim()).filter(Boolean),
         poster: document.getElementById("fieldPoster").value, 
         trailerUrl: document.getElementById("fieldTrailer").value,
         videoUrl: document.getElementById("fieldMovieUrl").value, 
         description: document.getElementById("fieldDescription").value
       };
-      
       newMovie._searchStr = normalizeText([newMovie.title, ...newMovie.genres, ...newMovie.cast, newMovie.year].join(" "));
-      
-      if(await saveMovie(newMovie)) {
-          closeAllOverlays(); 
-          location.reload();
-      }
+      if(await saveMovie(newMovie)) { closeAllOverlays(); location.reload(); }
     };
     document.getElementById("adminCancel").onclick = closeAllOverlays;
 
@@ -1106,98 +960,40 @@
       e.preventDefault();
       const k = document.getElementById("catKey").value.toLowerCase().trim();
       const l = document.getElementById("catLabel").value.trim();
-      const newC = { key: k, label: l };
-      if(await saveCategory(newC)) {
-        customCategories.push(newC); 
-        renderCatList(); renderAllRows(); 
-        document.getElementById("categoryForm").reset();
-      }
+      if(await saveCategory({ key: k, label: l })) { customCategories.push({ key: k, label: l }); renderCatList(); renderAllRows(); document.getElementById("categoryForm").reset(); }
     };
     function renderCatList() {
-      document.getElementById("categoryList").innerHTML = customCategories.map(c => `
-        <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.8rem;">
-           <span>${c.label} (${c.key})</span><span style="color:red; cursor:pointer;" onclick="removeCat('${c.key}')">Suppr.</span>
-        </div>`);
+      document.getElementById("categoryList").innerHTML = customCategories.map(c => `<div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.8rem;"><span>${c.label} (${c.key})</span><span style="color:red; cursor:pointer;" onclick="removeCat('${c.key}')">Suppr.</span></div>`);
     }
     window.removeCat = async (k) => {
-      if(!confirm("Supprimer catégorie ?")) return;
-      if(await deleteCategory(k)) {
-        customCategories = customCategories.filter(c => c.key !== k);
-        renderCatList(); renderAllRows();
-      }
+      if(!confirm("Supprimer ?")) return;
+      if(await deleteCategory(k)) { customCategories = customCategories.filter(c => c.key !== k); renderCatList(); renderAllRows(); }
     };
 
-    // --- AUTHENTIFICATION ---
-    const tabLogin = document.getElementById("tabLogin"), tabRegister = document.getElementById("tabRegister");
-    const formLogin = document.getElementById("loginForm"), formRegister = document.getElementById("registerForm");
+    /* --- AUTH --- */
+    const tabLogin = document.getElementById("tabLogin"), tabRegister = document.getElementById("tabRegister"), formLogin = document.getElementById("loginForm"), formRegister = document.getElementById("registerForm");
+    tabLogin.onclick = () => { tabLogin.classList.replace("btn-ghost", "btn-primary"); tabRegister.classList.replace("btn-primary", "btn-ghost"); formLogin.classList.remove("hidden"); formRegister.classList.add("hidden"); };
+    tabRegister.onclick = () => { tabRegister.classList.replace("btn-ghost", "btn-primary"); tabLogin.classList.replace("btn-primary", "btn-ghost"); formRegister.classList.remove("hidden"); formLogin.classList.add("hidden"); };
     
-    tabLogin.onclick = () => { 
-        tabLogin.classList.replace("btn-ghost", "btn-primary"); tabRegister.classList.replace("btn-primary", "btn-ghost"); 
-        formLogin.classList.remove("hidden"); formRegister.classList.add("hidden"); 
-    };
-    tabRegister.onclick = () => { 
-        tabRegister.classList.replace("btn-ghost", "btn-primary"); tabLogin.classList.replace("btn-primary", "btn-ghost"); 
-        formRegister.classList.remove("hidden"); formLogin.classList.add("hidden"); 
+    formLogin.onsubmit = (e) => { e.preventDefault(); auth.signInWithEmailAndPassword(document.getElementById("loginIdentifier").value.trim(), document.getElementById("loginPassword").value).then(() => { closeAllOverlays(); document.getElementById("loginError").style.display='none'; showToast("Connexion réussie"); }).catch(err => { document.getElementById("loginError").style.display='block'; document.getElementById("loginError").textContent=err.message; }); };
+    
+    formRegister.onsubmit = (e) => { e.preventDefault(); 
+      const p1=document.getElementById("registerPassword").value, p2=document.getElementById("registerPassword2").value;
+      if(p1!==p2) { document.getElementById("registerError").textContent="Mots de passe différents"; document.getElementById("registerError").style.display="block"; return; }
+      auth.createUserWithEmailAndPassword(document.getElementById("registerIdentifier").value.trim(), p1).then((cred) => {
+          return db.collection("users").doc(cred.user.uid).set({ email: cred.user.email, createdAt: firebase.firestore.FieldValue.serverTimestamp(), myList: [], watchProgress: {} });
+      }).then(() => { closeAllOverlays(); formRegister.reset(); showToast("Compte créé !"); }).catch(err => { document.getElementById("registerError").style.display='block'; document.getElementById("registerError").textContent=err.message; }); 
     };
     
-    // LOGIN
-    formLogin.onsubmit = (e) => {
-      e.preventDefault();
-      const email = document.getElementById("loginIdentifier").value.trim();
-      const pass = document.getElementById("loginPassword").value;
-      const errorDiv = document.getElementById("loginError");
-      
-      auth.signInWithEmailAndPassword(email, pass)
-          .then(() => { closeAllOverlays(); errorDiv.style.display = 'none'; showToast("Connexion réussie"); })
-          .catch(err => { errorDiv.style.display = 'block'; errorDiv.textContent = err.message; });
-    };
-
-    // REGISTER
-    formRegister.onsubmit = (e) => {
-      e.preventDefault();
-      const email = document.getElementById("registerIdentifier").value.trim();
-      const pass = document.getElementById("registerPassword").value;
-      const pass2 = document.getElementById("registerPassword2").value;
-      const errorDiv = document.getElementById("registerError");
-
-      if(pass !== pass2) { errorDiv.textContent = "Mots de passe différents"; errorDiv.style.display = "block"; return; }
-
-      auth.createUserWithEmailAndPassword(email, pass)
-          .then((cred) => {
-              return db.collection("users").doc(cred.user.uid).set({
-                  email: email,
-                  createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                  myList: [],
-                  watchProgress: {}
-              });
-          })
-          .then(() => { closeAllOverlays(); formRegister.reset(); showToast("Compte créé !"); })
-          .catch(err => { errorDiv.style.display = 'block'; errorDiv.textContent = err.message; });
-    };
-
-    // LOGOUT
-    document.getElementById("logoutBtn").onclick = () => {
-        auth.signOut().then(() => { closeAllOverlays(); showToast("Déconnecté"); });
-    };
+    document.getElementById("logoutBtn").onclick = () => { auth.signOut().then(() => { closeAllOverlays(); showToast("Déconnecté"); }); };
 
     function updateAccountUI() {
       const btn = document.getElementById("accountBtn"), logoutSec = document.getElementById("logoutSection");
       const userLabel = document.getElementById("currentUserLabel");
-      
-      if(currentUserData) {
-         btn.textContent = "Mon Compte";
-         userLabel.textContent = currentUserData.email;
-         logoutSec.classList.remove("hidden");
-         formLogin.classList.add("hidden"); 
-      } else {
-         btn.textContent = "Connexion";
-         logoutSec.classList.add("hidden");
-         formLogin.classList.remove("hidden");
-      }
-
+      if(currentUserData) { btn.textContent = "Mon Compte"; userLabel.textContent = currentUserData.email; logoutSec.classList.remove("hidden"); formLogin.classList.add("hidden"); } 
+      else { btn.textContent = "Connexion"; logoutSec.classList.add("hidden"); formLogin.classList.remove("hidden"); }
       const devs = [document.getElementById("addMovieBtn"), document.getElementById("addSeriesBtn"), document.getElementById("addCategoryBtn")];
-      if(isDev) devs.forEach(b => b.classList.remove("hidden")); 
-      else devs.forEach(b => b.classList.add("hidden"));
+      if(isDev) devs.forEach(b => b.classList.remove("hidden")); else devs.forEach(b => b.classList.add("hidden"));
     }
 
     document.addEventListener("DOMContentLoaded", initApp);
