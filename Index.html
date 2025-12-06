@@ -51,7 +51,11 @@
     header.header-auto-hide { transform: translateY(-100%); }
 
     .header-left, .header-right { display: flex; align-items: center; gap: 15px; }
-    .logo { display: flex; align-items: center; gap: 10px; }
+    
+    /* LOGO CLICKABLE POUR RESET */
+    .logo { display: flex; align-items: center; gap: 10px; cursor: pointer; transition: transform 0.2s; }
+    .logo:active { transform: scale(0.95); }
+
     .logo-pill {
       width: 38px; height: 38px; border-radius: 999px;
       background: radial-gradient(circle at 30% 20%, #f97316, transparent 50%),
@@ -159,12 +163,37 @@
       backdrop-filter: blur(4px); transition: background 0.2s, transform 0.2s;
     }
     .btn-hero-info:hover { background: rgba(109, 109, 110, 0.9); transform: scale(1.05); }
+    
+    /* --- MODIFICATION BOUTON MUTE --- */
     .btn-hero-mute {
       width: 45px; height: 45px; border-radius: 50%; background: rgba(255,255,255,0.1);
       border: 1px solid rgba(255,255,255,0.2); color: #fff; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: background 0.2s;
+      display: flex; align-items: center; justify-content: center; 
+      /* font-size retiré car on utilise un SVG */
+      transition: background 0.2s;
     }
     .btn-hero-mute:hover { background: rgba(255,255,255,0.3); }
+
+    /* Styles pour l'animation SVG du mute */
+    .mute-svg { width: 22px; height: 22px; fill: currentColor; }
+    
+    /* La barre diagonale (cross) */
+    .mute-svg .cross {
+        transition: stroke-dashoffset 0.3s ease;
+        stroke: currentColor; stroke-width: 2; stroke-linecap: round;
+        stroke-dasharray: 26; /* longueur approx de la diagonale */
+        stroke-dashoffset: 26; /* Caché par défaut (offset = longueur) */
+    }
+    /* Quand le bouton a la classe 'is-muted', on affiche la barre */
+    .btn-hero-mute.is-muted .cross {
+        stroke-dashoffset: 0;
+    }
+    
+    /* Les ondes sonores */
+    .mute-svg .waves { transition: opacity 0.3s ease; opacity: 1; }
+    /* Quand muté, on cache les ondes */
+    .btn-hero-mute.is-muted .waves { opacity: 0; }
+
 
     /* --- CONTENU --- */
     .main-content {
@@ -198,6 +227,7 @@
     .movie-card {
       flex: 0 0 auto; width: 200px; cursor: pointer;
       transition: transform 0.3s, opacity 0.3s;
+      position: relative; /* Pour la barre de progression */
     }
     .movie-card.dimmed { opacity: 0.2; filter: grayscale(1); pointer-events: none; }
 
@@ -216,6 +246,16 @@
     .movie-title-mini {
       margin-top: 8px; font-size: 0.85rem; color: #cbd5e1;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; opacity: 0.8;
+    }
+
+    /* BARRE DE PROGRESSION (NOUVEAU) */
+    .progress-container {
+      position: absolute; bottom: 30px; left: 0; width: 100%; height: 4px;
+      background: rgba(0,0,0,0.6); z-index: 25; pointer-events: none;
+    }
+    .progress-fill {
+      height: 100%; background: var(--accent); width: 0%;
+      box-shadow: 0 0 5px var(--accent);
     }
 
     .scroll-btn {
@@ -261,6 +301,12 @@
       transition: opacity 0.3s;
     }
     .toast.show { opacity: 1; }
+    
+    /* TMDB RESULT */
+    .tmdb-chip {
+        display: inline-block; padding: 5px; margin-right: 5px; cursor: pointer; border: 1px solid #444; border-radius: 4px; background: #222; font-size: 0.8rem;
+    }
+    .tmdb-chip:hover { border-color: var(--accent); background: #333; }
 
     @media (max-width: 768px) {
       header { padding: 0 16px; }
@@ -280,7 +326,7 @@
 
   <header id="mainHeader">
     <div class="header-left">
-      <div class="logo">
+      <div class="logo" onclick="resetToHome()">
         <div class="logo-pill"></div>
         <div>
           <div class="logo-title">NEONSTREAM</div>
@@ -314,7 +360,7 @@
       <div class="hero-actions">
         <button id="heroPlayBtn" class="btn-hero-play">▶ Lecture</button>
         <button id="heroMoreBtn" class="btn-hero-info">Plus d'infos</button>
-        <button id="heroMuteBtn" class="btn-hero-mute">🔇</button>
+        <button id="heroMuteBtn" class="btn-hero-mute"></button>
       </div>
     </div>
   </div>
@@ -336,6 +382,9 @@
           <div class="overlay-footer">
             <button class="btn-ghost hidden" id="overlayDeleteBtn" style="color:#f87171; border-color:rgba(248,113,113,0.3);">Supprimer</button>
             <button class="btn-ghost hidden" id="overlayEditBtn" style="border-color:rgba(255,255,255,0.3);">Modifier</button>
+            
+            <button class="btn-ghost" id="overlayMyListBtn">Ma Liste</button>
+
             <button class="btn-ghost" id="overlayWatchTrailerBtn">Voir Trailer</button>
             <button class="btn-primary" id="overlayWatchMovieBtn">Regarder le film</button>
           </div>
@@ -379,6 +428,16 @@
     <div class="overlay-dialog" style="max-width:500px; max-height:90vh; overflow-y:auto;">
       <button id="adminClose" class="overlay-close">✕</button>
       <h2 id="adminTitle" class="overlay-title" style="font-size:1.5rem;">Ajouter</h2>
+      
+      <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid rgba(168,85,247,0.3);">
+          <label class="form-label" style="color:var(--accent);">★ Import automatique TMDB</label>
+          <div style="display:flex; gap:8px;">
+              <input id="tmdbSearchInput" class="form-input" style="margin-bottom:0;" placeholder="Nom du film (ex: Avatar)...">
+              <button type="button" id="tmdbSearchBtn" class="btn-primary">Chercher</button>
+          </div>
+          <div id="tmdbResults" style="margin-top:10px; display:flex; gap:10px; overflow-x:auto; padding-bottom:5px;"></div>
+      </div>
+
       <form id="adminForm" style="display:flex; flex-direction:column; gap:8px;">
         <div><label class="form-label">Titre *</label><input id="fieldName" class="form-input" required></div>
         <div style="display:flex; gap:10px;">
@@ -386,11 +445,15 @@
           <div style="flex:1;"><label class="form-label">Durée</label><input id="fieldDuration" class="form-input" placeholder="ex: 1h54"></div>
         </div>
         <div><label class="form-label">Genres</label><input id="fieldGenres" class="form-input" placeholder="Action, Drame..."></div>
-        <div><label class="form-label">Tags</label><input id="fieldTags" class="form-input" placeholder="new, action..."></div>
+        <div><label class="form-label">Tags (catégories)</label><input id="fieldTags" class="form-input" placeholder="new, action..."></div>
         <div><label class="form-label">Acteurs</label><input id="fieldCast" class="form-input"></div>
         <div><label class="form-label">URL Affiche *</label><input id="fieldPoster" class="form-input" required></div>
-        <div><label class="form-label">URL Trailer (mp4) *</label><input id="fieldTrailer" class="form-input" required></div>
-        <div><label class="form-label">URL Film Complet (mp4) *</label><input id="fieldMovieUrl" class="form-input" required></div>
+        
+        <div style="border-top:1px solid #333; margin-top:10px; padding-top:10px;">
+            <div><label class="form-label">URL Trailer (YouTube/MP4) *</label><input id="fieldTrailer" class="form-input" required></div>
+            <div><label class="form-label">URL Film Complet (MP4/HLS) *</label><input id="fieldMovieUrl" class="form-input" required placeholder="https://.../film.mp4"></div>
+        </div>
+
         <div><label class="form-label">Description</label><textarea id="fieldDescription" class="form-input" style="min-height:80px;"></textarea></div>
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
           <button type="button" id="adminCancel" class="btn-ghost">Annuler</button>
@@ -419,6 +482,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <script>
+    // --- INTEGRATION TMDB ---
+    const TMDB_API_KEY = "8f5276da55d5885a7e3914aa74f5695f"; 
+    const TMDB_IMG_BASE = "https://image.tmdb.org/t/p/w500";
+
     // --- CONFIGURATION FIREBASE ---
     const firebaseConfig = {
       apiKey: "AIzaSyAbfM7mh_uGhxXRRMewWNSY3_Fv3mjDJdI",
@@ -434,7 +501,6 @@
     const auth = firebase.auth();
 
     // --- SÉCURITÉ ADMIN ---
-    // Remplace par ton email exact utilisé pour créer ton compte admin Firebase
     const ADMIN_EMAILS = ["herxingapp@gmail.com"]; 
 
     const builtInCategories = [
@@ -445,7 +511,9 @@
     ];
 
     let movies = [], customCategories = [];
-    let currentUserData = null; // Stocke l'objet user de Firebase
+    let currentUserData = null; 
+    let userList = []; 
+    let userProgress = {}; 
     let isDev = false;
 
     // --- UTILITAIRES ---
@@ -456,33 +524,90 @@
 
     // --- INITIALISATION ---
     function initApp() {
-        // Écouteur d'état de connexion (C'est le cœur de la sécurité frontend)
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 currentUserData = user;
-                // On vérifie si l'email correspond à la liste admin pour afficher l'UI
                 isDev = ADMIN_EMAILS.includes(user.email);
-                console.log("Connecté:", user.email, "Admin:", isDev);
+                await loadUserData(); 
             } else {
                 currentUserData = null;
+                userList = [];
+                userProgress = {};
                 isDev = false;
             }
             updateAccountUI();
             
-            // On recharge les films/catégories si nécessaire, ou on rafraichit juste l'affichage
             if(movies.length === 0) {
                 await Promise.all([ loadMovies(), loadCategories() ]);
                 initHero();
-                renderSections();
+                renderAllRows(); 
             } else {
-                renderSections(); // Pour mettre à jour les boutons d'édition si admin
+                renderAllRows();
             }
         });
-
         resetHeaderTimer();
     }
 
-    // --- CHARGEMENT DONNÉES ---
+    async function loadUserData() {
+        if(!currentUserData) return;
+        const doc = await db.collection("users").doc(currentUserData.uid).get();
+        if(doc.exists) {
+            const data = doc.data();
+            userList = data.myList || [];
+            userProgress = data.watchProgress || {};
+        }
+    }
+
+    // --- TMDB LOGIC (inchangé) ---
+    document.getElementById("tmdbSearchBtn").onclick = async () => {
+        const query = document.getElementById("tmdbSearchInput").value;
+        const resDiv = document.getElementById("tmdbResults");
+        if(!query) return;
+        resDiv.innerHTML = "Chargement...";
+        try {
+            const req = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=fr-FR&query=${encodeURIComponent(query)}`);
+            const data = await req.json();
+            resDiv.innerHTML = "";
+            if(!data.results || data.results.length === 0) {
+                resDiv.innerHTML = "Aucun résultat";
+                return;
+            }
+            data.results.slice(0, 5).forEach(m => {
+               if(!m.poster_path) return;
+               const img = document.createElement("img");
+               img.src = TMDB_IMG_BASE + m.poster_path;
+               img.style.height = "80px";
+               img.style.cursor = "pointer";
+               img.style.borderRadius = "4px";
+               img.style.border = "2px solid transparent";
+               img.onclick = () => fillFormWithTMDB(m);
+               resDiv.appendChild(img);
+            });
+        } catch(e) { console.error(e); resDiv.innerHTML = "Erreur API"; }
+    }
+
+    function fillFormWithTMDB(tmdbData) {
+        document.getElementById("fieldName").value = tmdbData.title;
+        document.getElementById("fieldYear").value = tmdbData.release_date ? tmdbData.release_date.split("-")[0] : 2024;
+        document.getElementById("fieldDescription").value = tmdbData.overview;
+        document.getElementById("fieldPoster").value = TMDB_IMG_BASE + tmdbData.poster_path;
+        document.getElementById("fieldTags").value = "new"; 
+        fetch(`https://api.themoviedb.org/3/movie/${tmdbData.id}?api_key=${TMDB_API_KEY}&language=fr-FR`)
+            .then(r=>r.json())
+            .then(detail => {
+                if(detail.runtime) {
+                    const h = Math.floor(detail.runtime / 60);
+                    const m = detail.runtime % 60;
+                    document.getElementById("fieldDuration").value = `${h}h${m < 10 ? '0'+m : m}`;
+                }
+                if(detail.genres) {
+                    document.getElementById("fieldGenres").value = detail.genres.map(g => g.name).join(", ");
+                }
+            });
+        alert("Infos remplies ! Ajoutez maintenant le lien de la vidéo (MP4).");
+    }
+
+    // --- CHARGEMENT DONNÉES (inchangé) ---
     async function loadMovies() {
       movies = [];
       try {
@@ -496,9 +621,8 @@
     }
 
     async function saveMovie(m) {
-        if(!isDev) return; // Sécurité UI
+        if(!isDev) return; 
         let toSave = {...m}; delete toSave._searchStr;
-        
         try {
             if(editingMovieId) {
                 await db.collection("movies").doc(editingMovieId).update(toSave);
@@ -514,13 +638,8 @@
     }
 
     async function deleteMovie(id) { 
-        try {
-            await db.collection("movies").doc(id).delete(); 
-            return true;
-        } catch(e) {
-            alert("Erreur suppression: Permission refusée.");
-            return false;
-        }
+        try { await db.collection("movies").doc(id).delete(); return true; } 
+        catch(e) { alert("Erreur suppression: Permission refusée."); return false; }
     }
 
     async function loadCategories() {
@@ -541,7 +660,6 @@
 
     function getAllCategories() { return [...builtInCategories, ...customCategories]; }
 
-
     // --- HERO & LECTEUR VIDEO ---
     const heroVideo = document.getElementById("heroTrailer");
     const heroTitle = document.getElementById("heroTitle");
@@ -558,11 +676,10 @@
     let currentMovieId = null; 
     let saveInterval = null;
 
-    // --- SAUVEGARDE PROGRESSION (SÉCURISÉE) ---
+    // --- SAUVEGARDE PROGRESSION ---
     function saveWatchProgress(time) {
       if(!currentUserData || !currentMovieId) return; 
-      
-      // On sauvegarde dans le document de l'utilisateur authentifié
+      userProgress[currentMovieId] = time; // Update local instantané
       const userRef = db.collection("users").doc(currentUserData.uid);
       userRef.set({
         watchProgress: {
@@ -573,12 +690,8 @@
 
     async function getWatchProgress(movieId) {
       if(!currentUserData) return 0;
-      try {
-        const doc = await db.collection("users").doc(currentUserData.uid).get();
-        if(doc.exists && doc.data().watchProgress && doc.data().watchProgress[movieId]) {
-          return doc.data().watchProgress[movieId];
-        }
-      } catch(e) { console.error("Erreur lecture progress", e); }
+      // On regarde d'abord en local pour être rapide
+      if(userProgress[movieId]) return userProgress[movieId];
       return 0;
     }
 
@@ -603,6 +716,16 @@
       heroVideo.addEventListener('pause', () => {
          if(isMoviePlaying) saveWatchProgress(heroVideo.currentTime);
       });
+
+      // INIT MUTE BUTTON AVEC SVG
+      heroVideo.muted = true;
+      heroMuteBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="mute-svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path class="speaker" d="M11 5L6 9H2v6h4l5 4V5z" fill="currentColor" stroke="none"></path>
+          <path class="waves" d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          <line class="cross" x1="3" y1="3" x2="21" y2="21"></line>
+        </svg>`;
+      updateMuteIcon();
     }
 
     async function enterMovieMode(url, movieId) {
@@ -661,6 +784,7 @@
         
         playHeroMovie(trailerPool[currentHeroIndex]);
         showHeader();
+        renderAllRows(); // Rafraichir pour la barre de progression
     }
 
     function playHeroMovie(movie) {
@@ -671,7 +795,8 @@
       updateMuteIcon();
       heroTitle.textContent = movie.title;
       heroDesc.textContent = movie.description;
-      heroMeta.innerHTML = `<span class="badge">${movie.year}</span><span class="badge">${movie.duration}</span><span class="badge">${(movie.genres||[]).slice(0,3).join(" • ")}</span>`;      
+      heroMeta.innerHTML = `<span class="badge">${movie.year}</span><span class="badge">${movie.duration}</span><span class="badge">${(movie.genres||[]).slice(0,3).join(" • ")}</span>`;
+      
       heroPlayBtn.onclick = () => {
          const movieUrl = movie.videoUrl || movie.trailerUrl;
          enterMovieMode(movieUrl, movie.id);
@@ -680,9 +805,17 @@
     }
     
     heroMuteBtn.onclick = () => { heroVideo.muted = !heroVideo.muted; updateMuteIcon(); };
-    function updateMuteIcon() { heroMuteBtn.textContent = heroVideo.muted ? "🔇" : "🔊"; }
+    
+    // UPDATE ICONE MUTE (AVEC CLASSE CSS POUR ANIMATION)
+    function updateMuteIcon() { 
+        if(heroVideo.muted) {
+            heroMuteBtn.classList.add('is-muted');
+        } else {
+            heroMuteBtn.classList.remove('is-muted');
+        }
+    }
 
-    // --- HEADER AUTO-HIDE ---
+    // --- HEADER AUTO-HIDE (inchangé) ---
     let headerTimeout;
     const header = document.getElementById('mainHeader');
     const searchInputEl = document.getElementById('searchInput');
@@ -702,37 +835,68 @@
       setTimeout(()=>t.classList.remove("show"), 3000);
     }
 
-    // --- RENDU SECTIONS ---
+    // --- RENDU SECTIONS (MODIFIÉ POUR INCLURE MA LISTE & REPRENDRE) ---
     const sectionsContainer = document.getElementById("sectionsContainer");
-    function renderSections() {
-      sectionsContainer.innerHTML = "";
-      getAllCategories().forEach(cat => {
-        const catMovies = movies.filter(m => (m.tags||[]).includes(cat.key));
-        if(!catMovies.length) return;
+
+    function renderAllRows() {
+        sectionsContainer.innerHTML = "";
+
+        // 1. REPRENDRE LA LECTURE
+        const resumeMovies = movies.filter(m => (userProgress[m.id] || 0) > 10); // > 10 sec
+        if(resumeMovies.length > 0) {
+            sectionsContainer.appendChild(createRowHtml("Reprendre la lecture", resumeMovies, true));
+        }
+
+        // 2. MA LISTE
+        const myListMovies = movies.filter(m => userList.includes(m.id));
+        if(myListMovies.length > 0) {
+            sectionsContainer.appendChild(createRowHtml("Ma Liste", myListMovies, false));
+        }
+
+        // 3. CATEGORIES STANDARD
+        getAllCategories().forEach(cat => {
+            const catMovies = movies.filter(m => (m.tags||[]).includes(cat.key));
+            if(catMovies.length) {
+                sectionsContainer.appendChild(createRowHtml(cat.label, catMovies, false));
+            }
+        });
+        
+        // Attacher les événements de clic
+        document.querySelectorAll(".movie-card").forEach(card => {
+            card.addEventListener("click", () => {
+                const m = movies.find(x => x.id === card.dataset.id);
+                if(m) openOverlay(m);
+            });
+        });
+    }
+
+    function createRowHtml(title, moviesList, isResumeRow) {
         const sec = document.createElement("section");
+        const cards = moviesList.map(m => {
+            let extra = "";
+            if(isResumeRow && userProgress[m.id]) {
+                // Barre de progression (style violet accent)
+                extra = `<div class="progress-container"><div class="progress-fill" style="width: 40%"></div></div>`;
+            }
+            return `
+            <div class="movie-card" data-id="${m.id}">
+              <div class="poster-wrapper">
+                <img src="${m.poster}" loading="lazy" alt="${m.title}" onerror="this.src='https://via.placeholder.com/200x300?text=No+Img'">
+              </div>
+              ${extra}
+              <div class="movie-title-mini">${m.title}</div>
+            </div>`;
+        }).join("");
+
         sec.innerHTML = `
-          <div class="section-header"><h3 class="section-title">${cat.label}</h3></div>
+          <div class="section-header"><h3 class="section-title">${title}</h3></div>
           <div class="row-wrapper">
             <button class="scroll-btn left" onclick="scrollRow(this, -300)">‹</button>
-            <div class="movie-row">
-              ${catMovies.map(m => `
-                <div class="movie-card" data-id="${m.id}">
-                  <div class="poster-wrapper"><img src="${m.poster}" loading="lazy" alt="${m.title}" onerror="this.src='https://via.placeholder.com/200x300?text=No+Img'"></div>
-                  <div class="movie-title-mini">${m.title}</div>
-                </div>
-              `).join("")}
-            </div>
+            <div class="movie-row">${cards}</div>
             <button class="scroll-btn right" onclick="scrollRow(this, 300)">›</button>
           </div>
         `;
-        sectionsContainer.appendChild(sec);
-      });
-      document.querySelectorAll(".movie-card").forEach(card => {
-        card.addEventListener("click", () => {
-          const m = movies.find(x => x.id === card.dataset.id);
-          if(m) openOverlay(m);
-        });
-      });
+        return sec;
     }
 
     window.scrollRow = (btn, amount) => {
@@ -741,7 +905,7 @@
       row.scrollBy({ left: amount, behavior: 'smooth' });
     };
 
-    // --- RECHERCHE ---
+    // --- RECHERCHE SITE (inchangé) ---
     const searchResults = document.getElementById("searchResults");
     searchInputEl.addEventListener("input", (e) => {
       const q = normalizeText(e.target.value);
@@ -787,7 +951,7 @@
       }
     });
 
-    // --- OVERLAYS ---
+    // --- OVERLAYS SITE (MODIFIÉ pour MA LISTE) ---
     const overlay = document.getElementById("overlay");
     function openOverlay(m) {
       document.getElementById("overlayPoster").src = m.poster;
@@ -808,10 +972,15 @@
          enterMovieMode(movieUrl, m.id); 
       };
       
+      // LOGIQUE BOUTON MA LISTE
+      const btnList = document.getElementById("overlayMyListBtn");
+      const isInList = userList.includes(m.id);
+      btnList.textContent = isInList ? "✓ Ma Liste" : "+ Ma Liste";
+      btnList.onclick = () => toggleMyList(m.id, btnList);
+
       const btnDel = document.getElementById("overlayDeleteBtn");
       const btnEdit = document.getElementById("overlayEditBtn");
       
-      // Affichage conditionnel sécurisé (la suppression réelle sera bloquée par Firestore si pas admin)
       if(isDev) {
         btnDel.classList.remove("hidden");
         btnEdit.classList.remove("hidden");
@@ -835,10 +1004,32 @@
       overlay.classList.remove("overlay-hidden");
     }
 
+    async function toggleMyList(movieId, btnElement) {
+        if(!currentUserData) { showToast("Connectez-vous !"); return; }
+        
+        const index = userList.indexOf(movieId);
+        if(index > -1) {
+            userList.splice(index, 1);
+            btnElement.textContent = "+ Ma Liste";
+            showToast("Retiré de la liste");
+        } else {
+            userList.push(movieId);
+            btnElement.textContent = "✓ Ma Liste";
+            showToast("Ajouté à la liste");
+        }
+        
+        // Sauvegarde Firebase
+        await db.collection("users").doc(currentUserData.uid).update({
+            myList: userList
+        });
+        
+        renderAllRows(); // Mettre à jour la ligne sur l'accueil
+    }
+
     function closeAllOverlays() { document.querySelectorAll(".overlay-backdrop").forEach(el => el.classList.add("overlay-hidden")); }
     document.querySelectorAll(".overlay-close").forEach(btn => btn.onclick = closeAllOverlays);
 
-    // --- GESTION ADMIN (UI) ---
+    // --- GESTION ADMIN (UI) (inchangé) ---
     const adminOverlay = document.getElementById("adminOverlay");
     const catOverlay = document.getElementById("categoryOverlay");
     const accountOverlay = document.getElementById("accountOverlay");
@@ -855,6 +1046,7 @@
       if(!isDev) return;
       currentAdminType = type;
       document.getElementById("adminForm").reset();
+      document.getElementById("tmdbResults").innerHTML = ""; 
       
       if(movieToEdit) {
          editingMovieId = movieToEdit.id;
@@ -892,7 +1084,7 @@
         year: parseInt(document.getElementById("fieldYear").value), 
         duration: document.getElementById("fieldDuration").value,
         genres: document.getElementById("fieldGenres").value.split(",").map(s=>s.trim()).filter(Boolean),
-        tags: document.getElementById("fieldTags").value.split(",").map(s=>s.trim().toLowerCase()).filter(Boolean),
+        tags: document.getElementById("fieldTags").value.split(",").map(s=>s.trim()).filter(Boolean),
         cast: document.getElementById("fieldCast").value.split(",").map(s=>s.trim()).filter(Boolean),
         poster: document.getElementById("fieldPoster").value, 
         trailerUrl: document.getElementById("fieldTrailer").value,
@@ -916,7 +1108,7 @@
       const newC = { key: k, label: l };
       if(await saveCategory(newC)) {
         customCategories.push(newC); 
-        renderCatList(); renderSections(); 
+        renderCatList(); renderAllRows(); 
         document.getElementById("categoryForm").reset();
       }
     };
@@ -924,17 +1116,17 @@
       document.getElementById("categoryList").innerHTML = customCategories.map(c => `
         <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.8rem;">
            <span>${c.label} (${c.key})</span><span style="color:red; cursor:pointer;" onclick="removeCat('${c.key}')">Suppr.</span>
-        </div>`).join("");
+        </div>`);
     }
     window.removeCat = async (k) => {
       if(!confirm("Supprimer catégorie ?")) return;
       if(await deleteCategory(k)) {
         customCategories = customCategories.filter(c => c.key !== k);
-        renderCatList(); renderSections();
+        renderCatList(); renderAllRows();
       }
     };
 
-    // --- AUTHENTIFICATION SÉCURISÉE ---
+    // --- AUTHENTIFICATION ---
     const tabLogin = document.getElementById("tabLogin"), tabRegister = document.getElementById("tabRegister");
     const formLogin = document.getElementById("loginForm"), formRegister = document.getElementById("registerForm");
     
@@ -971,10 +1163,11 @@
 
       auth.createUserWithEmailAndPassword(email, pass)
           .then((cred) => {
-              // Création de la fiche user dans Firestore
               return db.collection("users").doc(cred.user.uid).set({
                   email: email,
-                  createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                  createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                  myList: [],
+                  watchProgress: {}
               });
           })
           .then(() => { closeAllOverlays(); formRegister.reset(); showToast("Compte créé !"); })
@@ -994,14 +1187,13 @@
          btn.textContent = "Mon Compte";
          userLabel.textContent = currentUserData.email;
          logoutSec.classList.remove("hidden");
-         formLogin.classList.add("hidden"); // Cache les formulaires si déjà connecté
+         formLogin.classList.add("hidden"); 
       } else {
          btn.textContent = "Connexion";
          logoutSec.classList.add("hidden");
          formLogin.classList.remove("hidden");
       }
 
-      // Gestion visibilité boutons Admin
       const devs = [document.getElementById("addMovieBtn"), document.getElementById("addSeriesBtn"), document.getElementById("addCategoryBtn")];
       if(isDev) devs.forEach(b => b.classList.remove("hidden")); 
       else devs.forEach(b => b.classList.add("hidden"));
