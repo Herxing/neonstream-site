@@ -254,12 +254,8 @@
     .card-add-btn.added { background: var(--accent); color: white; }
     
     /* BOUTON SUPPRIMER (ROUGE) */
-    .card-add-btn.remove {
-        border-color: var(--danger); color: var(--danger);
-    }
-    .card-add-btn.remove:hover {
-        background: var(--danger); color: white;
-    }
+    .card-add-btn.remove { border-color: var(--danger); color: var(--danger); }
+    .card-add-btn.remove:hover { background: var(--danger); color: white; }
 
     .scroll-btn {
       position: absolute; top: 45%; transform: translateY(-50%); z-index: 30;
@@ -572,7 +568,6 @@
 
     function initApp() {
         auth.onAuthStateChanged(async (user) => {
-            // 1. CHARGER LES DONNÉES GLOBALES UNE SEULE FOIS
             if(movies.length === 0) {
                 await Promise.all([ loadMovies(), loadCategories() ]);
                 initHero();
@@ -771,7 +766,7 @@
     const fullPlayer = document.getElementById("fullPlayer");
 
     async function enterMovieMode(url, movieId) {
-        if(!url) return alert("Erreur: Lien vidéo manquant pour ce contenu."); // CHECK LIEN CASSE
+        if(!url) return alert("Erreur: Lien vidéo manquant pour ce contenu.");
         if(!currentUserData) showToast("Connectez-vous pour sauvegarder");
 
         document.getElementById("playerTitle").innerText = movies.find(m => m.id === movieId)?.title || "";
@@ -850,7 +845,6 @@
                 }
             }
 
-            // On ne passe plus le bouton en param pour éviter les erreurs, on le gère via ID
             const addBtn = `<button class="${btnClass}" onclick="event.stopPropagation(); toggleMyList('${m.id}')">${btnIcon}</button>`;
 
             return `
@@ -885,7 +879,7 @@
       const btnList = document.getElementById("overlayMyListBtn");
       const isInList = userList.includes(m.id);
       btnList.textContent = isInList ? "✓ Ma Liste" : "+ Ma Liste";
-      btnList.onclick = () => toggleMyList(m.id); // Appel du toggle
+      btnList.onclick = () => toggleMyList(m.id);
 
       const btnDel = document.getElementById("overlayDeleteBtn");
       const btnEdit = document.getElementById("overlayEditBtn");
@@ -897,7 +891,7 @@
       overlay.classList.remove("overlay-hidden");
     }
 
-    // UPDATE OPTIMISTE (INSTANTANÉ)
+    // UPDATE OPTIMISTE (INSTANTANÉE)
     async function toggleMyList(movieId) {
         if(!currentUserData) { showToast("Connectez-vous !"); return; }
 
@@ -917,14 +911,14 @@
         showToast(msg);
         renderAllRows(); 
         
-        // Update bouton overlay si ouvert (car il n'est pas rafraichi par renderAllRows)
+        // 3. Update bouton overlay si ouvert
         const btnList = document.getElementById("overlayMyListBtn");
         if(btnList && !document.getElementById("overlay").classList.contains("overlay-hidden")) {
              const isIn = userList.includes(movieId);
              btnList.textContent = isIn ? "✓ Ma Liste" : "+ Ma Liste";
         }
 
-        // 3. Save DB Background
+        // 4. Save DB Background
         try {
             await db.collection("users").doc(currentUserData.uid).set({ myList: userList }, { merge: true });
         } catch(e) { console.error("Erreur sauvegarde liste:", e); }
