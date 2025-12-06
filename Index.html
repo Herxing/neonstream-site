@@ -2,68 +2,56 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>NeonStream - Accueil</title>
+  <title>NeonStream - Cyberpunk</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-
-  <meta name="description" content="NeonStream - Regardez vos films et séries préférés en streaming HD. Interface Cyberpunk, lecture fluide et gratuite.">
-  <meta name="keywords" content="streaming, films, séries, cyberpunk, gratuit, hd, vf">
-  <meta name="author" content="NeonStream">
-
-  <meta property="og:title" content="NeonStream - Streaming Unlimited">
-  <meta property="og:description" content="Découvrez notre catalogue de films en style Cyberpunk.">
-  <meta property="og:image" content="https://placehold.co/1200x630/05030a/a855f7?text=NeonStream"> <meta property="og:url" content="https://neonstream-official.netlify.app">
-  <meta property="og:type" content="website">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <meta name="description" content="NeonStream - Streaming Cyberpunk">
+
   <style>
     :root {
       --bg: #05030a;
       --bg-alt: #0b0715;
-      --accent: #a855f7;
-      --accent-strong: #e879f9;
-      --accent-soft: rgba(168, 85, 247, 0.35);
+      --accent: #a855f7;       
+      --accent-glow: #d8b4fe; 
+      --accent-dim: rgba(168, 85, 247, 0.3);
       --text: #f9f5ff;
-      --text-muted: #a1a1aa;
-      --border: rgba(148, 163, 184, 0.25);
-      --danger: #f97373;
+      --danger: #ef4444;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
+    
     body {
-      font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: "Space Grotesk", sans-serif;
       background-color: var(--bg);
       color: var(--text);
       min-height: 100vh;
       overflow-x: hidden;
+      background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      background-size: 100% 2px, 3px 100%;
     }
-
     .hidden { display: none !important; }
 
     /* --- HEADER --- */
     header {
-      position: fixed; top: 0; left: 0; width: 100%; height: 80px;
+      position: fixed; top: 0; width: 100%; height: 70px;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0 40px; 
-      z-index: 1000; 
-      background: rgba(5, 3, 10, 0.15); 
-      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-      transform: translateY(0);
-      transition: transform 0.4s ease-out, background 0.3s ease;
+      padding: 0 40px; z-index: 1000; 
+      background: linear-gradient(to bottom, rgba(5,3,10,0.95) 0%, transparent 100%);
+      transition: background 0.3s, border 0.3s;
     }
-    
-    header.scrolled { background: rgba(5, 3, 10, 0.95); }
-    header.header-auto-hide { transform: translateY(-100%); }
+    header.scrolled { 
+        background: rgba(5, 3, 10, 0.95); 
+        border-bottom: 1px solid var(--accent-dim); 
+        box-shadow: 0 0 15px var(--accent-dim);
+    }
 
-    .header-left, .header-right { display: flex; align-items: center; gap: 15px; }
+    .header-left, .header-right { display: flex; align-items: center; gap: 20px; }
     
-    /* LOGO RESET */
     .logo { display: flex; align-items: center; gap: 10px; cursor: pointer; transition: transform 0.2s; }
     .logo:active { transform: scale(0.95); }
 
@@ -130,10 +118,7 @@
     }
     
     .playing-mode .hero-overlay-gradient,
-    .playing-mode .hero-content {
-      opacity: 0 !important;
-      pointer-events: none;
-    }
+    .playing-mode .hero-content { opacity: 0 !important; pointer-events: none; }
 
     .hero-content {
       position: relative; z-index: 2; margin: 0 0 60px 60px; width: 100%; max-width: 600px;
@@ -184,7 +169,6 @@
     }
     .btn-hero-mute:hover { background: rgba(255,255,255,0.3); }
     
-    /* ANIMATION SVG MUTE */
     .mute-svg { width: 22px; height: 22px; fill: currentColor; }
     .mute-svg .cross {
         transition: stroke-dashoffset 0.3s ease;
@@ -282,7 +266,43 @@
     .scroll-btn.right { right: 10px; }
     .row-wrapper:hover .scroll-btn { opacity: 1; }
 
-    /* OVERLAYS & FORMS */
+    /* BOUTON FLOTTANT ADMIN */
+    .floating-admin-btn {
+        position: fixed; bottom: 30px; right: 30px;
+        width: 60px; height: 60px; border-radius: 50%;
+        background: var(--accent); color: white; border: none;
+        font-size: 2.5rem; cursor: pointer; z-index: 2000;
+        box-shadow: 0 0 20px var(--accent);
+        display: flex; align-items: center; justify-content: center;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .floating-admin-btn:hover { transform: scale(1.1); box-shadow: 0 0 40px var(--accent-glow); }
+
+    /* LECTEUR VIDEO COMPLET */
+    .player-overlay {
+        position: fixed; inset: 0; background: black; z-index: 5000;
+        display: none; flex-direction: column;
+    }
+    .player-overlay.active { display: flex; }
+    
+    .player-header {
+        position: absolute; top: 0; left: 0; width: 100%; height: 80px;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 40px; z-index: 5001; opacity: 0; transition: opacity 0.3s;
+    }
+    .player-overlay:hover .player-header { opacity: 1; }
+    
+    .player-title { font-size: 1.5rem; font-weight: 700; text-shadow: 0 0 10px black; }
+    .btn-close-player {
+        background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white; padding: 8px 16px; border-radius: 4px; cursor: pointer;
+        font-weight: bold; backdrop-filter: blur(5px);
+    }
+    .btn-close-player:hover { background: var(--danger); border-color: var(--danger); }
+    .player-video { width: 100%; height: 100%; object-fit: contain; }
+
+    /* OVERLAYS */
     .overlay-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 20px; }
     .overlay-hidden { display: none; }
     .overlay-dialog { background: #18181b; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; max-width: 800px; width: 100%; padding: 24px; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); }
@@ -302,7 +322,7 @@
     .form-input { width: 100%; background: #27272a; border: 1px solid #3f3f46; color: #fff; padding: 10px; border-radius: 6px; margin-bottom: 10px; }
     .form-label { display: block; font-size: 0.8rem; margin-bottom: 4px; color: #a1a1aa; }
 
-    /* TOAST NOTIFICATION */
+    /* TOAST */
     .toast {
       position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
       background: rgba(168, 85, 247, 0.9); color: white;
@@ -312,10 +332,7 @@
       transition: opacity 0.3s;
     }
     .toast.show { opacity: 1; }
-    
-    .tmdb-chip {
-        display: inline-block; padding: 5px; margin-right: 5px; cursor: pointer; border: 1px solid #444; border-radius: 4px; background: #222; font-size: 0.8rem;
-    }
+    .tmdb-chip { display: inline-block; padding: 5px; margin-right: 5px; cursor: pointer; border: 1px solid #444; border-radius: 4px; background: #222; font-size: 0.8rem; }
     .tmdb-chip:hover { border-color: var(--accent); background: #333; }
 
     @media (max-width: 768px) {
@@ -329,6 +346,7 @@
       .movie-row { padding: 10px 20px 30px 20px; gap: 12px; }
       .movie-card { width: 130px; }
       .scroll-btn { width: 36px; height: 36px; font-size: 1.2rem; opacity: 0.7; }
+      .floating-admin-btn { bottom: 20px; right: 20px; width: 50px; height: 50px; font-size: 2rem; }
     }
   </style>
 </head>
@@ -377,7 +395,17 @@
 
   <main id="sectionsContainer" class="main-content"></main>
 
+  <button id="floatingAdminBtn" class="floating-admin-btn hidden" title="Gérer Catégories">+</button>
+
   <div id="toast" class="toast">Action effectuée</div>
+
+  <div id="playerOverlay" class="player-overlay">
+    <div class="player-header">
+        <div class="player-title" id="playerTitle">Titre du Film</div>
+        <button class="btn-close-player" onclick="exitPlayer()">✕ QUITTER</button>
+    </div>
+    <video id="fullPlayer" class="player-video" controls preload="metadata"></video>
+  </div>
 
   <div id="overlay" class="overlay-backdrop overlay-hidden">
     <div class="overlay-dialog">
@@ -392,9 +420,7 @@
           <div class="overlay-footer">
             <button class="btn-ghost hidden" id="overlayDeleteBtn" style="color:#f87171; border-color:rgba(248,113,113,0.3);">Supprimer</button>
             <button class="btn-ghost hidden" id="overlayEditBtn" style="border-color:rgba(255,255,255,0.3);">Modifier</button>
-            
             <button class="btn-ghost" id="overlayMyListBtn">Ma Liste</button>
-
             <button class="btn-ghost" id="overlayWatchTrailerBtn">Voir Trailer</button>
             <button class="btn-primary" id="overlayWatchMovieBtn">Regarder le film</button>
           </div>
@@ -411,22 +437,19 @@
         <button id="tabLogin" class="btn-primary" style="flex:1;">Connexion</button>
         <button id="tabRegister" class="btn-ghost" style="flex:1;">Inscription</button>
       </div>
-      
       <form id="loginForm">
         <label class="form-label">Email</label><input id="loginIdentifier" class="form-input" type="email" required placeholder="exemple@mail.com">
         <label class="form-label">Mot de passe</label><input id="loginPassword" class="form-input" type="password" required placeholder="••••••">
         <div id="loginError" style="color:#f87171; font-size:0.8rem; margin-top:5px; display:none;">Erreur d'identifiants</div>
         <button type="submit" class="btn-primary" style="width:100%; margin-top:15px;">Se connecter</button>
       </form>
-
       <form id="registerForm" class="hidden">
         <label class="form-label">Email</label><input id="registerIdentifier" class="form-input" type="email" required placeholder="exemple@mail.com">
-        <label class="form-label">Mot de passe (6 carac. min)</label><input id="registerPassword" class="form-input" type="password" required minlength="6">
+        <label class="form-label">Mot de passe</label><input id="registerPassword" class="form-input" type="password" required minlength="6">
         <label class="form-label">Confirmation</label><input id="registerPassword2" class="form-input" type="password" required>
         <div id="registerError" style="color:#f87171; font-size:0.8rem; margin-top:5px; display:none;">Erreur</div>
         <button type="submit" class="btn-primary" style="width:100%; margin-top:15px;">Créer compte</button>
       </form>
-
       <div id="logoutSection" class="hidden" style="text-align:center; margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:20px;">
         <p style="margin-bottom:10px; color:#a1a1aa;">Connecté en tant que <strong id="currentUserLabel" style="color:#fff;"></strong></p>
         <button id="logoutBtn" class="btn-ghost" style="width:100%;">Se déconnecter</button>
@@ -438,7 +461,6 @@
     <div class="overlay-dialog" style="max-width:500px; max-height:90vh; overflow-y:auto;">
       <button id="adminClose" class="overlay-close">✕</button>
       <h2 id="adminTitle" class="overlay-title" style="font-size:1.5rem;">Ajouter</h2>
-      
       <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid rgba(168,85,247,0.3);">
           <label class="form-label" style="color:var(--accent);">★ Import automatique TMDB</label>
           <div style="display:flex; gap:8px;">
@@ -447,7 +469,6 @@
           </div>
           <div id="tmdbResults" style="margin-top:10px; display:flex; gap:10px; overflow-x:auto; padding-bottom:5px;"></div>
       </div>
-
       <form id="adminForm" style="display:flex; flex-direction:column; gap:8px;">
         <div><label class="form-label">Titre *</label><input id="fieldName" class="form-input" required></div>
         <div style="display:flex; gap:10px;">
@@ -458,12 +479,10 @@
         <div><label class="form-label">Tags (catégories)</label><input id="fieldTags" class="form-input" placeholder="new, action..."></div>
         <div><label class="form-label">Acteurs</label><input id="fieldCast" class="form-input"></div>
         <div><label class="form-label">URL Affiche *</label><input id="fieldPoster" class="form-input" required></div>
-        
         <div style="border-top:1px solid #333; margin-top:10px; padding-top:10px;">
             <div><label class="form-label">URL Trailer (YouTube/MP4) *</label><input id="fieldTrailer" class="form-input" required></div>
             <div><label class="form-label">URL Film Complet (MP4/HLS) *</label><input id="fieldMovieUrl" class="form-input" required placeholder="https://.../film.mp4"></div>
         </div>
-
         <div><label class="form-label">Description</label><textarea id="fieldDescription" class="form-input" style="min-height:80px;"></textarea></div>
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
           <button type="button" id="adminCancel" class="btn-ghost">Annuler</button>
@@ -492,11 +511,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <script>
-    // --- INTEGRATION TMDB ---
     const TMDB_API_KEY = "8f5276da55d5885a7e3914aa74f5695f"; 
     const TMDB_IMG_BASE = "https://image.tmdb.org/t/p/w500";
 
-    // --- CONFIGURATION FIREBASE ---
     const firebaseConfig = {
       apiKey: "AIzaSyAbfM7mh_uGhxXRRMewWNSY3_Fv3mjDJdI",
       authDomain: "neonstream-a1c6e.firebaseapp.com",
@@ -510,7 +527,6 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // --- SÉCURITÉ ADMIN ---
     const ADMIN_UIDS = ["KR7yODJYmefEw9D06poPRNIQF7w1"];
 
     const builtInCategories = [
@@ -522,48 +538,38 @@
 
     let movies = [], customCategories = [];
     let currentUserData = null; 
-    let userList = []; 
-    let userProgress = {}; 
+    let userList = [], userProgress = {}; 
     let isDev = false;
 
-    // --- UTILITAIRES ---
     function normalizeText(text) { return (text || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
     function slugify(str) { return normalizeText(str).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""); }
     function shuffle(array) { return [...array].sort(() => Math.random() - 0.5); }
     function movieHasPlayableVideo(m) { return !!(m.trailerUrl || m.videoUrl); }
 
-    // --- FONCTION RESET TO HOME ---
     window.resetToHome = () => {
-        // Stop si film en cours
-        if(isMoviePlaying) exitMovieMode();
-        // Ferme tout
+        if(isMoviePlaying) exitPlayer();
         closeAllOverlays();
         window.scrollTo({top:0, behavior:'smooth'});
         initHero();
     };
 
-    // --- INITIALISATION ---
     function initApp() {
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 currentUserData = user;
                 isDev = ADMIN_UIDS.includes(user.uid);
-                await loadUserData(); 
+                await loadUserData();
+                if(isDev) checkExpiredNewTags(); // Nettoyage Auto
             } else {
                 currentUserData = null;
-                userList = [];
-                userProgress = {};
-                isDev = false;
+                userList = []; userProgress = {}; isDev = false;
             }
             updateAccountUI();
-            
             if(movies.length === 0) {
                 await Promise.all([ loadMovies(), loadCategories() ]);
                 initHero();
                 renderAllRows(); 
-            } else {
-                renderAllRows();
-            }
+            } else { renderAllRows(); }
         });
         resetHeaderTimer();
     }
@@ -578,7 +584,26 @@
         }
     }
 
-    // --- TMDB LOGIC ---
+    /* NETTOYAGE AUTO TAGS "NEW" */
+    async function checkExpiredNewTags() {
+        if (!movies.length) await loadMovies();
+        const TEN_DAYS = 10 * 24 * 60 * 60 * 1000;
+        const now = Date.now();
+        let updated = false;
+
+        movies.forEach(async m => {
+            if(m.tags && m.tags.includes('new') && m.dateAdded) {
+                if(now - m.dateAdded > TEN_DAYS) {
+                    const newTags = m.tags.filter(t => t !== 'new');
+                    await db.collection("movies").doc(m.id).update({ tags: newTags });
+                    updated = true;
+                }
+            }
+        });
+        if(updated) console.log("Nettoyage des tags 'new' effectué.");
+    }
+
+    /* TMDB */
     document.getElementById("tmdbSearchBtn").onclick = async () => {
         const query = document.getElementById("tmdbSearchInput").value;
         const resDiv = document.getElementById("tmdbResults");
@@ -588,7 +613,7 @@
             const req = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=fr-FR&query=${encodeURIComponent(query)}`);
             const data = await req.json();
             resDiv.innerHTML = "";
-            if(!data.results || data.results.length === 0) { resDiv.innerHTML = "Aucun résultat"; return; }
+            if(!data.results || !data.results.length) { resDiv.innerHTML = "Aucun résultat"; return; }
             data.results.slice(0, 5).forEach(m => {
                if(!m.poster_path) return;
                const img = document.createElement("img");
@@ -597,7 +622,7 @@
                img.onclick = () => fillFormWithTMDB(m);
                resDiv.appendChild(img);
             });
-        } catch(e) { console.error(e); resDiv.innerHTML = "Erreur API"; }
+        } catch(e) { resDiv.innerHTML = "Erreur API"; }
     }
 
     function fillFormWithTMDB(tmdbData) {
@@ -631,22 +656,34 @@
     async function saveMovie(m) {
         if(!isDev) return; 
         let toSave = {...m}; delete toSave._searchStr;
-        if(editingMovieId) await db.collection("movies").doc(editingMovieId).update(toSave);
-        else await db.collection("movies").doc(m.id).set(toSave);
-        return true;
+        try {
+            if(editingMovieId) await db.collection("movies").doc(editingMovieId).update(toSave);
+            else await db.collection("movies").doc(m.id).set(toSave);
+            return true;
+        } catch(e) { alert("Erreur sauvegarde admin"); return false; }
     }
 
-    async function deleteMovie(id) { await db.collection("movies").doc(id).delete(); return true; }
+    async function deleteMovie(id) { 
+        try { await db.collection("movies").doc(id).delete(); return true; } 
+        catch(e) { alert("Erreur suppression"); return false; }
+    }
+
     async function loadCategories() {
       customCategories = [];
       const snap = await db.collection("categories").get();
       snap.forEach(d => customCategories.push(d.data()));
     }
-    async function saveCategory(c) { await db.collection("categories").doc(c.key).set(c); return true; }
-    async function deleteCategory(k) { await db.collection("categories").doc(k).delete(); return true; }
+    async function saveCategory(c) { 
+        try { await db.collection("categories").doc(c.key).set(c); return true; } 
+        catch(e) { return false; }
+    }
+    async function deleteCategory(k) { 
+        try { await db.collection("categories").doc(k).delete(); return true; }
+        catch(e) { return false; }
+    }
     function getAllCategories() { return [...builtInCategories, ...customCategories]; }
 
-    /* --- HERO & VIDEO --- */
+    /* HERO */
     const heroVideo = document.getElementById("heroTrailer");
     const heroTitle = document.getElementById("heroTitle");
     const heroMeta = document.getElementById("heroMeta");
@@ -676,7 +713,6 @@
         }
       };
 
-      // INIT MUTE BUTTON
       heroVideo.muted = true;
       heroMuteBtn.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="mute-svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -705,103 +741,57 @@
     }
     
     heroMuteBtn.onclick = () => { heroVideo.muted = !heroVideo.muted; updateMuteIcon(); };
+    
     function updateMuteIcon() { 
         if(heroVideo.muted) heroMuteBtn.classList.add('is-muted');
         else heroMuteBtn.classList.remove('is-muted');
     }
 
-    /* --- LECTEUR (LOGIQUE MISE A JOUR) --- */
+    /* LECTEUR COMPLET */
+    const playerOverlay = document.getElementById("playerOverlay");
+    const fullPlayer = document.getElementById("fullPlayer");
+
     async function enterMovieMode(url, movieId) {
         if(!currentUserData) showToast("Connectez-vous pour sauvegarder");
+
+        document.getElementById("playerTitle").innerText = movies.find(m => m.id === movieId)?.title || "";
+        fullPlayer.src = url;
+        
+        const savedTime = userProgress[movieId] || 0;
+        if(savedTime > 5) { fullPlayer.currentTime = savedTime; showToast("Reprise..."); }
+        else fullPlayer.currentTime = 0;
+        
+        playerOverlay.classList.add("active");
+        fullPlayer.play();
         
         isMoviePlaying = true;
         currentMovieId = movieId;
         
-        // SEO TITRE
-        const m = movies.find(x => x.id === movieId);
-        if(m) document.title = m.title + " - NeonStream";
-
-        heroContainer.classList.add('playing-mode');
-        document.body.classList.add('cinema-mode'); 
-        hideHeader(); 
-        
-        const savedTime = userProgress[movieId] || 0;
-        heroVideo.src = url;
-        
-        const onReady = () => {
-            if(savedTime > 5) { heroVideo.currentTime = savedTime; showToast("Reprise..."); }
-            else heroVideo.currentTime = 0;
-            
-            heroVideo.muted = false;
-            heroVideo.controls = true;
-            heroVideo.style.objectFit = 'contain';
-            heroVideo.play();
-            heroVideo.removeEventListener('loadedmetadata', onReady);
-        };
-        heroVideo.addEventListener('loadedmetadata', onReady);
-        
-        window.scrollTo({top:0, behavior:'smooth'});
-        
         clearInterval(saveInterval);
         saveInterval = setInterval(() => {
-           if(!heroVideo.paused) saveWatchProgress(heroVideo.currentTime);
+           if(!fullPlayer.paused) saveWatchProgress(fullPlayer.currentTime);
         }, 5000);
     }
 
-    function exitMovieMode() {
-        if(isMoviePlaying) saveWatchProgress(heroVideo.currentTime);
-        clearInterval(saveInterval);
-
+    window.exitPlayer = () => {
+        fullPlayer.pause();
+        fullPlayer.src = ""; 
+        playerOverlay.classList.remove("active");
         isMoviePlaying = false;
-        currentMovieId = null;
-        
-        // RESET TITLE
-        document.title = "NeonStream - Accueil";
+        clearInterval(saveInterval);
+        renderAllRows(); 
+    };
 
-        if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
-        
-        heroContainer.classList.remove('playing-mode');
-        document.body.classList.remove('cinema-mode');
-        
-        heroVideo.controls = false;
-        heroVideo.style.objectFit = 'cover';
-        heroVideo.muted = true;
-        
-        playHeroMovie(trailerPool[currentHeroIndex]);
-        showHeader();
-        renderAllRows();
-    }
-
-    // --- HEADER AUTO-HIDE ---
-    let headerTimeout;
-    const header = document.getElementById('mainHeader');
-    const searchInputEl = document.getElementById('searchInput');
-
-    function showHeader() { header.classList.remove('header-auto-hide'); }
-    function hideHeader() { if (document.activeElement === searchInputEl || header.matches(':hover')) return; header.classList.add('header-auto-hide'); }
-    function resetHeaderTimer() { showHeader(); clearTimeout(headerTimeout); headerTimeout = setTimeout(hideHeader, 3000); }
-    document.addEventListener('mousemove', () => { resetHeaderTimer(); });
-    window.addEventListener("scroll", () => { if(window.scrollY > 50) header.classList.add("scrolled"); else header.classList.remove("scrolled"); });
-    header.addEventListener('mouseenter', () => clearTimeout(headerTimeout));
-    header.addEventListener('mouseleave', () => resetHeaderTimer());
-
-    function showToast(msg) {
-      const t = document.getElementById("toast");
-      t.textContent = msg;
-      t.classList.add("show");
-      setTimeout(()=>t.classList.remove("show"), 3000);
-    }
-
-    // --- RENDU SECTIONS ---
+    /* RENDU & UI */
     const sectionsContainer = document.getElementById("sectionsContainer");
     function renderAllRows() {
         sectionsContainer.innerHTML = "";
         
         const resumeMovies = movies.filter(m => (userProgress[m.id] || 0) > 10);
-        if(resumeMovies.length) sectionsContainer.appendChild(createRowHtml("Reprendre la lecture", resumeMovies, true));
+        if(resumeMovies.length > 0) sectionsContainer.appendChild(createRowHtml("Reprendre la lecture", resumeMovies, true));
         
         const myListMovies = movies.filter(m => userList.includes(m.id));
-        if(myListMovies.length) sectionsContainer.appendChild(createRowHtml("Ma Liste", myListMovies, false));
+        if(myListMovies.length > 0) sectionsContainer.appendChild(createRowHtml("Ma Liste", myListMovies, false));
 
         getAllCategories().forEach(cat => {
             const catMovies = movies.filter(m => (m.tags||[]).includes(cat.key));
@@ -823,7 +813,6 @@
             if(isResumeRow && userProgress[m.id]) {
                 extra = `<div class="progress-container"><div class="progress-fill" style="width: 40%"></div></div>`;
             }
-            // Add Button on Poster
             const isInList = userList.includes(m.id);
             const btnClass = isInList ? "card-add-btn added" : "card-add-btn";
             const btnIcon = isInList ? "✓" : "+";
@@ -846,27 +835,7 @@
       btn.closest('.row-wrapper').querySelector('.movie-row').scrollBy({ left: amount, behavior: 'smooth' });
     };
 
-    // --- RECHERCHE ---
-    const searchResults = document.getElementById("searchResults");
-    searchInputEl.addEventListener("input", (e) => {
-      const q = normalizeText(e.target.value);
-      const cards = document.querySelectorAll(".movie-card");
-      if(!q) { cards.forEach(c => c.classList.remove("dimmed")); searchResults.classList.remove("active"); return; }
-      const matches = movies.filter(m => m._searchStr && m._searchStr.includes(q));
-      const matchIds = new Set(matches.map(m => m.id));
-      cards.forEach(c => { if(matchIds.has(c.dataset.id)) c.classList.remove("dimmed"); else c.classList.add("dimmed"); });
-      searchResults.innerHTML = "";
-      matches.forEach(m => {
-          const div = document.createElement("div"); div.className = "search-result-item";
-          div.innerHTML = `<img class="search-result-thumb" src="${m.poster}"><div class="search-result-info"><div class="search-result-title">${m.title}</div><div class="search-result-meta">${m.year}</div></div>`;
-          div.onclick = () => { openOverlay(m); searchResults.classList.remove("active"); };
-          searchResults.appendChild(div);
-      });
-      searchResults.classList.add("active");
-    });
-    document.addEventListener("click", (e) => { if(!searchInputEl.contains(e.target) && !searchResults.contains(e.target)) searchResults.classList.remove("active"); });
-
-    // --- OVERLAYS ---
+    /* OVERLAYS */
     const overlay = document.getElementById("overlay");
     function openOverlay(m) {
       document.getElementById("overlayPoster").src = m.poster;
@@ -905,8 +874,14 @@
     function closeAllOverlays() { document.querySelectorAll(".overlay-backdrop").forEach(el => el.classList.add("overlay-hidden")); }
     document.querySelectorAll(".overlay-close").forEach(btn => btn.onclick = closeAllOverlays);
 
-    // --- ADMIN ---
+    /* ADMIN & AUTH UI */
     const adminOverlay = document.getElementById("adminOverlay"), catOverlay = document.getElementById("categoryOverlay"), accountOverlay = document.getElementById("accountOverlay");
+    
+    document.getElementById("floatingAdminBtn").onclick = () => {
+        catOverlay.classList.remove("overlay-hidden");
+        renderCatList();
+    };
+
     document.getElementById("addMovieBtn").onclick = () => openAdmin("film");
     document.getElementById("addSeriesBtn").onclick = () => openAdmin("serie");
     document.getElementById("addCategoryBtn").onclick = () => { catOverlay.classList.remove("overlay-hidden"); renderCatList(); };
@@ -940,6 +915,7 @@
       const title = document.getElementById("fieldName").value;
       const newMovie = {
         id: editingMovieId ? editingMovieId : slugify(title) + "-" + Date.now(),
+        dateAdded: Date.now(), // DATE D'AJOUT POUR AUTO-DELETE TAG
         type: currentAdminType, title: title,
         year: parseInt(document.getElementById("fieldYear").value), 
         duration: document.getElementById("fieldDuration").value,
@@ -970,13 +946,12 @@
       if(await deleteCategory(k)) { customCategories = customCategories.filter(c => c.key !== k); renderCatList(); renderAllRows(); }
     };
 
-    /* --- AUTH --- */
+    /* AUTH */
     const tabLogin = document.getElementById("tabLogin"), tabRegister = document.getElementById("tabRegister"), formLogin = document.getElementById("loginForm"), formRegister = document.getElementById("registerForm");
     tabLogin.onclick = () => { tabLogin.classList.replace("btn-ghost", "btn-primary"); tabRegister.classList.replace("btn-primary", "btn-ghost"); formLogin.classList.remove("hidden"); formRegister.classList.add("hidden"); };
     tabRegister.onclick = () => { tabRegister.classList.replace("btn-ghost", "btn-primary"); tabLogin.classList.replace("btn-primary", "btn-ghost"); formRegister.classList.remove("hidden"); formLogin.classList.add("hidden"); };
     
     formLogin.onsubmit = (e) => { e.preventDefault(); auth.signInWithEmailAndPassword(document.getElementById("loginIdentifier").value.trim(), document.getElementById("loginPassword").value).then(() => { closeAllOverlays(); document.getElementById("loginError").style.display='none'; showToast("Connexion réussie"); }).catch(err => { document.getElementById("loginError").style.display='block'; document.getElementById("loginError").textContent=err.message; }); };
-    
     formRegister.onsubmit = (e) => { e.preventDefault(); 
       const p1=document.getElementById("registerPassword").value, p2=document.getElementById("registerPassword2").value;
       if(p1!==p2) { document.getElementById("registerError").textContent="Mots de passe différents"; document.getElementById("registerError").style.display="block"; return; }
@@ -984,16 +959,24 @@
           return db.collection("users").doc(cred.user.uid).set({ email: cred.user.email, createdAt: firebase.firestore.FieldValue.serverTimestamp(), myList: [], watchProgress: {} });
       }).then(() => { closeAllOverlays(); formRegister.reset(); showToast("Compte créé !"); }).catch(err => { document.getElementById("registerError").style.display='block'; document.getElementById("registerError").textContent=err.message; }); 
     };
-    
     document.getElementById("logoutBtn").onclick = () => { auth.signOut().then(() => { closeAllOverlays(); showToast("Déconnecté"); }); };
 
     function updateAccountUI() {
       const btn = document.getElementById("accountBtn"), logoutSec = document.getElementById("logoutSection");
       const userLabel = document.getElementById("currentUserLabel");
+      const floatBtn = document.getElementById("floatingAdminBtn");
+
       if(currentUserData) { btn.textContent = "Mon Compte"; userLabel.textContent = currentUserData.email; logoutSec.classList.remove("hidden"); formLogin.classList.add("hidden"); } 
       else { btn.textContent = "Connexion"; logoutSec.classList.add("hidden"); formLogin.classList.remove("hidden"); }
+      
       const devs = [document.getElementById("addMovieBtn"), document.getElementById("addSeriesBtn"), document.getElementById("addCategoryBtn")];
-      if(isDev) devs.forEach(b => b.classList.remove("hidden")); else devs.forEach(b => b.classList.add("hidden"));
+      if(isDev) {
+          devs.forEach(b => b.classList.remove("hidden"));
+          floatBtn.classList.remove("hidden");
+      } else {
+          devs.forEach(b => b.classList.add("hidden"));
+          floatBtn.classList.add("hidden");
+      }
     }
 
     document.addEventListener("DOMContentLoaded", initApp);
