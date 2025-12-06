@@ -254,8 +254,19 @@
     .card-add-btn.added { background: var(--accent); color: white; }
     
     /* BOUTON SUPPRIMER (ROUGE) */
-    .card-add-btn.remove { border-color: var(--danger); color: var(--danger); }
-    .card-add-btn.remove:hover { background: var(--danger); color: white; }
+   /* BOUTON SUPPRIMER (ROUGE) */
+.card-add-btn.remove {
+    border-color: var(--danger); 
+    color: var(--danger);
+    /* AJOUTEZ CETTE LIGNE pour mettre le fond en noir */
+    background: rgba(0, 0, 0, 0.8); /* Fond semi-transparent noir */
+}
+/* Lorsque la souris est sur le bouton */
+.card-add-btn.remove:hover {
+    /* Garder le fond rouge au survol pour l'effet de confirmation */
+    background: var(--danger); 
+    color: white;
+}
 
     .scroll-btn {
       position: absolute; top: 45%; transform: translateY(-50%); z-index: 30;
@@ -524,6 +535,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <script>
+    // --- GLOBAL UTILITIES AND CONFIG ---
     const TMDB_API_KEY = "8f5276da55d5885a7e3914aa74f5695f"; 
     const TMDB_IMG_BASE = "https://image.tmdb.org/t/p/w500";
 
@@ -554,10 +566,29 @@
     let userList = [], userProgress = {}; 
     let isDev = false;
 
+    // --- UTILITIES ---
     function normalizeText(text) { return (text || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
     function slugify(str) { return normalizeText(str).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""); }
     function shuffle(array) { return [...array].sort(() => Math.random() - 0.5); }
     function movieHasPlayableVideo(m) { return !!(m.trailerUrl || m.videoUrl); }
+    
+    // --- NOUVELLE FONCTION: AFFICHER TOAST ---
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(()=>t.classList.remove("show"), 3000);
+    }
+    
+    // --- FONCTIONS HEADER (REMONTEES POUR FIXER LA REFERENCE ERROR) ---
+    let headerTimeout;
+    const header = document.getElementById('mainHeader');
+    const searchInputEl = document.getElementById('searchInput');
+
+    function showHeader() { header.classList.remove('header-auto-hide'); }
+    function hideHeader() { if (document.activeElement === searchInputEl || header.matches(':hover')) return; header.classList.add('header-auto-hide'); }
+    function resetHeaderTimer() { showHeader(); clearTimeout(headerTimeout); headerTimeout = setTimeout(hideHeader, 3000); }
+    // FIN DES FONCTIONS REMONTEES
 
     window.resetToHome = () => {
         if(isMoviePlaying) exitPlayer();
@@ -586,7 +617,12 @@
             updateAccountUI();
             renderAllRows();
         });
+        
         resetHeaderTimer();
+        document.addEventListener('mousemove', () => { resetHeaderTimer(); });
+        window.addEventListener("scroll", () => { if(window.scrollY > 50) header.classList.add("scrolled"); else header.classList.remove("scrolled"); });
+        header.addEventListener('mouseenter', () => clearTimeout(headerTimeout));
+        header.addEventListener('mouseleave', () => resetHeaderTimer());
     }
 
     async function loadUserData() {
@@ -873,8 +909,17 @@
       document.getElementById("overlayActors").textContent = (m.cast||[]).join(", ");
       document.getElementById("overlayMeta").textContent = `${m.year} • ${m.duration} • ${(m.genres||[]).join(", ")}`;
       
-      document.getElementById("overlayWatchMovieBtn").onclick = () => { closeAllOverlays(); enterMovieMode(m.videoUrl || m.trailerUrl, m.id); };
-      document.getElementById("overlayWatchTrailerBtn").onclick = () => { closeAllOverlays(); enterMovieMode(m.trailerUrl || m.videoUrl, m.id); };
+      document.getElementById("overlayWatchMovieBtn").onclick = () => {
+         const movieUrl = m.videoUrl || m.trailerUrl;
+         closeAllOverlays();
+         enterMovieMode(movieUrl, m.id);
+      };
+      
+      document.getElementById("overlayWatchTrailerBtn").onclick = () => {
+         const movieUrl = m.trailerUrl || m.videoUrl;
+         closeAllOverlays();
+         enterMovieMode(movieUrl, m.id); 
+      };
       
       const btnList = document.getElementById("overlayMyListBtn");
       const isInList = userList.includes(m.id);
@@ -891,7 +936,7 @@
       overlay.classList.remove("overlay-hidden");
     }
 
-    // UPDATE OPTIMISTE (INSTANTANÉE)
+    // MISE À JOUR OPTIMISTE (INSTANTANÉE)
     async function toggleMyList(movieId) {
         if(!currentUserData) { showToast("Connectez-vous !"); return; }
 
