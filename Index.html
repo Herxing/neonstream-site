@@ -242,7 +242,7 @@
       box-shadow: 0 0 5px var(--accent);
     }
 
-    /* BOUTON LISTE SUR AFFICHE */
+    /* BOUTON MA LISTE SUR AFFICHE (Normal) */
     .card-add-btn {
         position: absolute; bottom: 40px; right: 10px; width: 30px; height: 30px; border-radius: 50%;
         background: rgba(0,0,0,0.8); border: 1px solid var(--accent); color: var(--accent);
@@ -453,7 +453,7 @@
       </form>
       <form id="registerForm" class="hidden">
         <label class="form-label">Email</label><input id="registerIdentifier" class="form-input" type="email" required placeholder="exemple@mail.com">
-        <label class="form-label">Mot de passe (6 carac. min)</label><input id="registerPassword" class="form-input" type="password" required minlength="6">
+        <label class="form-label">Mot de passe</label><input id="registerPassword" class="form-input" type="password" required minlength="6">
         <label class="form-label">Confirmation</label><input id="registerPassword2" class="form-input" type="password" required>
         <div id="registerError" style="color:#f87171; font-size:0.8rem; margin-top:5px; display:none;">Erreur</div>
         <button type="submit" class="btn-primary" style="width:100%; margin-top:15px;">Créer compte</button>
@@ -563,7 +563,7 @@
 
     function initApp() {
         auth.onAuthStateChanged(async (user) => {
-            // CHARGER CONTENU GLOBAL D'ABORD (évite les doublons)
+            // 1. CHARGER DONNÉES UNE SEULE FOIS (CORRECTION DOUBLONS)
             if(movies.length === 0) {
                 await Promise.all([ loadMovies(), loadCategories() ]);
                 initHero();
@@ -573,7 +573,6 @@
                 currentUserData = user;
                 isDev = ADMIN_UIDS.includes(user.uid);
                 await loadUserData();
-                // Check tags uniquement une fois que movies est chargé
                 if(isDev) checkExpiredNewTags();
             } else {
                 currentUserData = null;
@@ -597,7 +596,7 @@
     }
 
     async function checkExpiredNewTags() {
-        // Movies déjà chargé dans initApp
+        // Movies déjà chargé, pas de doublon ici
         const TEN_DAYS = 10 * 24 * 60 * 60 * 1000;
         const now = Date.now();
         movies.forEach(async m => {
@@ -651,7 +650,7 @@
     }
 
     async function loadMovies() {
-      movies = []; // Clear avant de charger
+      movies = []; // Clear array
       const snap = await db.collection("movies").get();
       snap.forEach(doc => {
           const d = doc.data();
@@ -662,7 +661,6 @@
 
     async function saveMovie(m) {
         if(!isDev) return; 
-        // SECURITY : CHECK DUPLICATE
         if(!editingMovieId) {
             const existing = movies.find(exist => exist.title.toLowerCase() === m.title.toLowerCase());
             if(existing && !confirm("Ce film existe déjà ! Voulez-vous vraiment l'ajouter en double ?")) return false;
@@ -803,6 +801,7 @@
         const resumeMovies = movies.filter(m => (userProgress[m.id] || 0) > 10);
         if(resumeMovies.length) sectionsContainer.appendChild(createRowHtml("Reprendre la lecture", resumeMovies, true));
         
+        // MA LISTE
         const myListMovies = movies.filter(m => userList.includes(m.id));
         if(myListMovies.length) sectionsContainer.appendChild(createRowHtml("Ma Liste", myListMovies, false));
 
@@ -827,11 +826,9 @@
                 extra = `<div class="progress-container"><div class="progress-fill" style="width: 40%"></div></div>`;
             }
             
-            // LOGIQUE DU BOUTON LISTE DANS LA RANGÉE
+            // BOUTONS LISTE
             const isInList = userList.includes(m.id);
-            // Si c'est la rangée "Ma Liste", on met un bouton de suppression (rouge/-)
             const isMyListRow = (title === "Ma Liste");
-            
             let btnClass = "card-add-btn";
             let btnIcon = "+";
             
@@ -839,12 +836,12 @@
                 btnClass += " added";
                 btnIcon = "✓";
                 if(isMyListRow) {
-                    btnClass += " remove"; // Classe rouge
+                    btnClass += " remove"; 
                     btnIcon = "🗑"; // Icone Poubelle
                 }
             }
 
-            const addBtn = `<button class="${btnClass}" onclick="event.stopPropagation(); toggleMyList('${m.id}', this)">${btnIcon}</button>`;
+            const addBtn = `<button class="${btnClass}" onclick="event.stopPropagation(); toggleMyList('${m.id}')">${btnIcon}</button>`;
 
             return `
             <div class="movie-card" data-id="${m.id}">
@@ -878,7 +875,7 @@
       const btnList = document.getElementById("overlayMyListBtn");
       const isInList = userList.includes(m.id);
       btnList.textContent = isInList ? "✓ Ma Liste" : "+ Ma Liste";
-      btnList.onclick = () => toggleMyList(m.id, btnList);
+      btnList.onclick = () => toggleMyList(m.id);
 
       const btnDel = document.getElementById("overlayDeleteBtn");
       const btnEdit = document.getElementById("overlayEditBtn");
@@ -890,22 +887,37 @@
       overlay.classList.remove("overlay-hidden");
     }
 
-    async function toggleMyList(movieId, btnElement) {
+    // UPDATE OPTIMISTE (INSTANTANÉ)
+    async function toggleMyList(movieId) {
         if(!currentUserData) { showToast("Connectez-vous !"); return; }
+
         const index = userList.indexOf(movieId);
-        if(index > -1) { 
-            userList.splice(index, 1); 
-            if(btnElement) btnElement.textContent = "+ Ma Liste"; 
-            showToast("Retiré"); 
+        let msg = "";
+
+        // 1. Modif Locale
+        if(index > -1) {
+            userList.splice(index, 1);
+            msg = "Retiré de la liste";
+        } else {
+            userList.push(movieId);
+            msg = "Ajouté à la liste";
         }
-        else { 
-            userList.push(movieId); 
-            if(btnElement) btnElement.textContent = "✓ Ma Liste"; 
-            showToast("Ajouté"); 
+
+        // 2. Update UI Immédiat
+        showToast(msg);
+        renderAllRows(); 
+        
+        // Update bouton overlay si ouvert
+        const btnList = document.getElementById("overlayMyListBtn");
+        if(btnList && !document.getElementById("overlay").classList.contains("overlay-hidden")) {
+             const isIn = userList.includes(movieId);
+             btnList.textContent = isIn ? "✓ Ma Liste" : "+ Ma Liste";
         }
-        // IMPORTANT : Utiliser SET avec MERGE pour éviter les erreurs si le doc n'existe pas
-        await db.collection("users").doc(currentUserData.uid).set({ myList: userList }, { merge: true });
-        renderAllRows();
+
+        // 3. Save DB Background
+        try {
+            await db.collection("users").doc(currentUserData.uid).set({ myList: userList }, { merge: true });
+        } catch(e) { console.error("Erreur save:", e); }
     }
 
     function closeAllOverlays() { document.querySelectorAll(".overlay-backdrop").forEach(el => el.classList.add("overlay-hidden")); }
