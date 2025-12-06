@@ -109,7 +109,7 @@
     .hero-container.playing-mode { height: 100vh; margin-bottom: 0; }
 
     .hero-bg-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
-    .hero-bg-video video { width: 100%; height: 100%; object-fit: cover; transition: object-fit 0.5s ease; }
+    .hero-bg-video video { width: 100%; height: 100%; object-fit: cover; transition: object-fit 0.5s ease; opacity: 0.7; }
     
     .hero-overlay-gradient {
       position: absolute; inset: 0; z-index: 1; pointer-events: none;
@@ -242,7 +242,7 @@
       box-shadow: 0 0 5px var(--accent);
     }
 
-    /* BOUTON MA LISTE SUR AFFICHE */
+    /* BOUTON LISTE SUR AFFICHE */
     .card-add-btn {
         position: absolute; bottom: 40px; right: 10px; width: 30px; height: 30px; border-radius: 50%;
         background: rgba(0,0,0,0.8); border: 1px solid var(--accent); color: var(--accent);
@@ -252,6 +252,14 @@
     .card-add-btn:hover { background: var(--accent); color: white; }
     .movie-card:hover .card-add-btn { opacity: 1; transform: translateY(0); }
     .card-add-btn.added { background: var(--accent); color: white; }
+    
+    /* BOUTON SUPPRIMER (ROUGE) */
+    .card-add-btn.remove {
+        border-color: var(--danger); color: var(--danger);
+    }
+    .card-add-btn.remove:hover {
+        background: var(--danger); color: white;
+    }
 
     .scroll-btn {
       position: absolute; top: 45%; transform: translateY(-50%); z-index: 30;
@@ -445,7 +453,7 @@
       </form>
       <form id="registerForm" class="hidden">
         <label class="form-label">Email</label><input id="registerIdentifier" class="form-input" type="email" required placeholder="exemple@mail.com">
-        <label class="form-label">Mot de passe</label><input id="registerPassword" class="form-input" type="password" required minlength="6">
+        <label class="form-label">Mot de passe (6 carac. min)</label><input id="registerPassword" class="form-input" type="password" required minlength="6">
         <label class="form-label">Confirmation</label><input id="registerPassword2" class="form-input" type="password" required>
         <div id="registerError" style="color:#f87171; font-size:0.8rem; margin-top:5px; display:none;">Erreur</div>
         <button type="submit" class="btn-primary" style="width:100%; margin-top:15px;">Créer compte</button>
@@ -555,21 +563,25 @@
 
     function initApp() {
         auth.onAuthStateChanged(async (user) => {
+            // CHARGER CONTENU GLOBAL D'ABORD (évite les doublons)
+            if(movies.length === 0) {
+                await Promise.all([ loadMovies(), loadCategories() ]);
+                initHero();
+            }
+
             if (user) {
                 currentUserData = user;
                 isDev = ADMIN_UIDS.includes(user.uid);
                 await loadUserData();
-                if(isDev) checkExpiredNewTags(); // Nettoyage Auto
+                // Check tags uniquement une fois que movies est chargé
+                if(isDev) checkExpiredNewTags();
             } else {
                 currentUserData = null;
                 userList = []; userProgress = {}; isDev = false;
             }
+            
             updateAccountUI();
-            if(movies.length === 0) {
-                await Promise.all([ loadMovies(), loadCategories() ]);
-                initHero();
-                renderAllRows(); 
-            } else { renderAllRows(); }
+            renderAllRows();
         });
         resetHeaderTimer();
     }
@@ -584,23 +596,18 @@
         }
     }
 
-    /* NETTOYAGE AUTO TAGS "NEW" */
     async function checkExpiredNewTags() {
-        if (!movies.length) await loadMovies();
+        // Movies déjà chargé dans initApp
         const TEN_DAYS = 10 * 24 * 60 * 60 * 1000;
         const now = Date.now();
-        let updated = false;
-
         movies.forEach(async m => {
             if(m.tags && m.tags.includes('new') && m.dateAdded) {
                 if(now - m.dateAdded > TEN_DAYS) {
                     const newTags = m.tags.filter(t => t !== 'new');
                     await db.collection("movies").doc(m.id).update({ tags: newTags });
-                    updated = true;
                 }
             }
         });
-        if(updated) console.log("Nettoyage des tags 'new' effectué.");
     }
 
     /* TMDB */
@@ -644,7 +651,7 @@
     }
 
     async function loadMovies() {
-      movies = [];
+      movies = []; // Clear avant de charger
       const snap = await db.collection("movies").get();
       snap.forEach(doc => {
           const d = doc.data();
@@ -655,6 +662,12 @@
 
     async function saveMovie(m) {
         if(!isDev) return; 
+        // SECURITY : CHECK DUPLICATE
+        if(!editingMovieId) {
+            const existing = movies.find(exist => exist.title.toLowerCase() === m.title.toLowerCase());
+            if(existing && !confirm("Ce film existe déjà ! Voulez-vous vraiment l'ajouter en double ?")) return false;
+        }
+
         let toSave = {...m}; delete toSave._searchStr;
         try {
             if(editingMovieId) await db.collection("movies").doc(editingMovieId).update(toSave);
@@ -747,7 +760,7 @@
         else heroMuteBtn.classList.remove('is-muted');
     }
 
-    /* LECTEUR COMPLET */
+    /* LECTEUR */
     const playerOverlay = document.getElementById("playerOverlay");
     const fullPlayer = document.getElementById("fullPlayer");
 
@@ -782,16 +795,16 @@
         renderAllRows(); 
     };
 
-    /* RENDU & UI */
+    /* RENDU UI */
     const sectionsContainer = document.getElementById("sectionsContainer");
     function renderAllRows() {
         sectionsContainer.innerHTML = "";
         
         const resumeMovies = movies.filter(m => (userProgress[m.id] || 0) > 10);
-        if(resumeMovies.length > 0) sectionsContainer.appendChild(createRowHtml("Reprendre la lecture", resumeMovies, true));
+        if(resumeMovies.length) sectionsContainer.appendChild(createRowHtml("Reprendre la lecture", resumeMovies, true));
         
         const myListMovies = movies.filter(m => userList.includes(m.id));
-        if(myListMovies.length > 0) sectionsContainer.appendChild(createRowHtml("Ma Liste", myListMovies, false));
+        if(myListMovies.length) sectionsContainer.appendChild(createRowHtml("Ma Liste", myListMovies, false));
 
         getAllCategories().forEach(cat => {
             const catMovies = movies.filter(m => (m.tags||[]).includes(cat.key));
@@ -813,9 +826,24 @@
             if(isResumeRow && userProgress[m.id]) {
                 extra = `<div class="progress-container"><div class="progress-fill" style="width: 40%"></div></div>`;
             }
+            
+            // LOGIQUE DU BOUTON LISTE DANS LA RANGÉE
             const isInList = userList.includes(m.id);
-            const btnClass = isInList ? "card-add-btn added" : "card-add-btn";
-            const btnIcon = isInList ? "✓" : "+";
+            // Si c'est la rangée "Ma Liste", on met un bouton de suppression (rouge/-)
+            const isMyListRow = (title === "Ma Liste");
+            
+            let btnClass = "card-add-btn";
+            let btnIcon = "+";
+            
+            if(isInList) {
+                btnClass += " added";
+                btnIcon = "✓";
+                if(isMyListRow) {
+                    btnClass += " remove"; // Classe rouge
+                    btnIcon = "🗑"; // Icone Poubelle
+                }
+            }
+
             const addBtn = `<button class="${btnClass}" onclick="event.stopPropagation(); toggleMyList('${m.id}', this)">${btnIcon}</button>`;
 
             return `
@@ -865,16 +893,25 @@
     async function toggleMyList(movieId, btnElement) {
         if(!currentUserData) { showToast("Connectez-vous !"); return; }
         const index = userList.indexOf(movieId);
-        if(index > -1) { userList.splice(index, 1); if(btnElement) btnElement.textContent = "+ Ma Liste"; showToast("Retiré"); }
-        else { userList.push(movieId); if(btnElement) btnElement.textContent = "✓ Ma Liste"; showToast("Ajouté"); }
-        await db.collection("users").doc(currentUserData.uid).update({ myList: userList });
+        if(index > -1) { 
+            userList.splice(index, 1); 
+            if(btnElement) btnElement.textContent = "+ Ma Liste"; 
+            showToast("Retiré"); 
+        }
+        else { 
+            userList.push(movieId); 
+            if(btnElement) btnElement.textContent = "✓ Ma Liste"; 
+            showToast("Ajouté"); 
+        }
+        // IMPORTANT : Utiliser SET avec MERGE pour éviter les erreurs si le doc n'existe pas
+        await db.collection("users").doc(currentUserData.uid).set({ myList: userList }, { merge: true });
         renderAllRows();
     }
 
     function closeAllOverlays() { document.querySelectorAll(".overlay-backdrop").forEach(el => el.classList.add("overlay-hidden")); }
     document.querySelectorAll(".overlay-close").forEach(btn => btn.onclick = closeAllOverlays);
 
-    /* ADMIN & AUTH UI */
+    /* ADMIN & UI */
     const adminOverlay = document.getElementById("adminOverlay"), catOverlay = document.getElementById("categoryOverlay"), accountOverlay = document.getElementById("accountOverlay");
     
     document.getElementById("floatingAdminBtn").onclick = () => {
@@ -915,7 +952,7 @@
       const title = document.getElementById("fieldName").value;
       const newMovie = {
         id: editingMovieId ? editingMovieId : slugify(title) + "-" + Date.now(),
-        dateAdded: Date.now(), // DATE D'AJOUT POUR AUTO-DELETE TAG
+        dateAdded: Date.now(),
         type: currentAdminType, title: title,
         year: parseInt(document.getElementById("fieldYear").value), 
         duration: document.getElementById("fieldDuration").value,
