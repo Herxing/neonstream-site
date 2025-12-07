@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="fr"><head>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
   <meta charset="UTF-8">
   <title>NeonStream</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -61,6 +63,44 @@
     }
     .logo-title { font-weight: 700; font-size: 1rem; letter-spacing: 0.05em; text-transform: uppercase; }
     .logo-sub { font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.1em; }
+
+    /* --- NOUVEAU STYLE NAVIGATION --- */
+    .main-nav { 
+        display: flex; 
+        gap: 10px; 
+        margin-left: 20px; 
+        align-items: center; 
+    }
+    .nav-btn {
+        padding: 8px 15px;
+        border: none;
+        background: transparent;
+        color: var(--text);
+        font-weight: 500;
+        font-size: 0.9rem;
+        cursor: pointer;
+        position: relative;
+        transition: color 0.2s;
+        opacity: 0.7;
+    }
+    .nav-btn:hover {
+        opacity: 1;
+        color: var(--accent-glow);
+    }
+    .nav-btn.active {
+        opacity: 1;
+        font-weight: 700;
+    }
+    .nav-btn.active::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 10%;
+        width: 80%;
+        height: 3px;
+        background-color: var(--accent);
+        border-radius: 999px;
+    }
 
     .btn-dev, .btn-dev-primary {
       border-radius: 999px; padding: 8px 16px; font-size: 0.75rem;
@@ -191,7 +231,7 @@
     }
     .section-title { font-size: 1.3rem; font-weight: 600; color: #fff; }
 
-    /* CARROUSEL */
+    /* CARROUSSEL */
     .row-wrapper { position: relative; width: 100%; }
 
     .movie-row {
@@ -252,17 +292,15 @@
     .card-add-btn.added { background: var(--accent); color: white; }
     
    /* BOUTON SUPPRIMER (ROUGE) */
-.card-add-btn.remove {
-    border-color: var(--danger); 
-    color: var(--danger);
-    /* AJOUTEZ CETTE LIGNE pour mettre le fond en noir */
-    background: rgba(0, 0, 0, 0.8); /* Fond semi-transparent noir */
-}/* Lorsque la souris est sur le bouton */
-.card-add-btn.remove:hover {
-    /* Garder le fond rouge au survol pour l'effet de confirmation */
-    background: var(--danger); 
-    color: white;
-}
+    .card-add-btn.remove {
+        border-color: var(--danger); 
+        color: var(--danger);
+        background: rgba(0, 0, 0, 0.8); 
+    }
+    .card-add-btn.remove:hover {
+        background: var(--danger); 
+        color: white;
+    }
 
     .scroll-btn {
       position: absolute; top: 45%; transform: translateY(-50%); z-index: 30;
@@ -320,79 +358,6 @@
     .overlay-close { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.1); border: none; color: #fff; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
     .overlay-close:hover { background: rgba(255,255,255,0.2); }
     .overlay-layout { display: grid; grid-template-columns: 240px 1fr; gap: 24px; }
-    <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche" onerror="this.src='https://placehold.co/300x450?text=No+Poster'"></div>
-    <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche" onerror="this.src='https://placehold.co/300x450?text=No+Poster'"></div>
-    <div class="overlay-title">Titre</div>
-    <div class="overlay-meta"></div>
-    <div style="margin-bottom:10px; font-size:0.85rem; color:#fff;">Avec : <span id="overlayActors" style="color:#a1a1aa;"></span></div>
-    <p class="overlay-desc">Description...</p>
-    <div class="overlay-footer">
-        <button class="btn-ghost hidden" id="overlayDeleteBtn" style="color:#f87171; border-color:rgba(248,113,113,0.3);">Supprimer</button>
-        <button class="btn-ghost hidden" id="overlayEditBtn" style="border-color:rgba(255,255,255,0.3);">Modifier</button>
-        <button class="btn-ghost" id="overlayMyListBtn">Ma Liste</button>
-        <button class="btn-ghost" id="overlayWatchTrailerBtn">Voir Trailer</button>
-        <button class="btn-primary" id="overlayWatchMovieBtn">Regarder le film</button>
-    </div>
-    <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche" onerror="this.src='https://placehold.co/300x450?text=No+Poster'"></div>
-    <div class="overlay-title">Titre</div>
-    <div class="overlay-meta"></div>
-    <div style="margin-bottom:10px; font-size:0.85rem; color:#fff;">Avec : <span id="overlayActors" style="color:#a1a1aa;"></span></div>
-    <p class="overlay-desc">Description...</p>
-    <div class="overlay-footer">
-        <button class="btn-ghost hidden" id="overlayDeleteBtn" style="color:#f87171; border-color:rgba(248,113,113,0.3);">Supprimer</button>
-        <button class="btn-ghost hidden" id="overlayEditBtn" style="border-color:rgba(255,255,255,0.3);">Modifier</button>
-        <button class="btn-ghost" id="overlayMyListBtn">Ma Liste</button>
-        <button class="btn-ghost" id="overlayWatchTrailerBtn">Voir Trailer</button>
-        <button class="btn-primary" id="overlayWatchMovieBtn">Regarder le film</button>
-    </div>
-    <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche" onerror="this.src='https://placehold.co/300x450?text=No+Poster'"></div>
-    <div class="overlay-title">Titre</div>
-    <div class="overlay-meta"></div>
-    <div style="margin-bottom:10px; font-size:0.85rem; color:#fff;">Avec : <span id="overlayActors" style="color:#a1a1aa;"></span></div>
-    <p class="overlay-desc">Description...</p>
-    <div class="overlay-footer">
-        <button class="btn-ghost hidden" id="overlayDeleteBtn" style="color:#f87171; border-color:rgba(248,113,113,0.3);">Supprimer</button>
-        <button class="btn-ghost hidden" id="overlayEditBtn" style="border-color:rgba(255,255,255,0.3);">Modifier</button>
-        <button class="btn-ghost" id="overlayMyListBtn">Ma Liste</button>
-        <button class="btn-ghost" id="overlayWatchTrailerBtn">Voir Trailer</button>
-        <button class="btn-primary" id="overlayWatchMovieBtn">Regarder le film</button>
-    </div>
-    <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche" onerror="this.src='https://placehold.co/300x450?text=No+Poster'"></div>
-    <div class="overlay-title">Titre</div>
-    <div class="overlay-meta"></div>
-    <div style="margin-bottom:10px; font-size:0.85rem; color:#fff;">Avec : <span id="overlayActors" style="color:#a1a1aa;"></span></div>
-    <p class="overlay-desc">Description...</p>
-    <div class="overlay-footer">
-        <button class="btn-ghost hidden" id="overlayDeleteBtn" style="color:#f87171; border-color:rgba(248,113,113,0.3);">Supprimer</button>
-        <button class="btn-ghost hidden" id="overlayEditBtn" style="border-color:rgba(255,255,255,0.3);">Modifier</button>
-        <button class="btn-ghost" id="overlayMyListBtn">Ma Liste</button>
-        <button class="btn-ghost" id="overlayWatchTrailerBtn">Voir Trailer</button>
-        <button class="btn-primary" id="overlayWatchMovieBtn">Regarder le film</button>
-    </div>
-    <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche" onerror="this.src='https://placehold.co/300x450?text=No+Poster'"></div>
-    <div class="overlay-title">Titre</div>
-    <div class="overlay-meta"></div>
-    <div style="margin-bottom:10px; font-size:0.85rem; color:#fff;">Avec : <span id="overlayActors" style="color:#a1a1aa;"></span></div>
-    <p class="overlay-desc">Description...</p>
-    <div class="overlay-footer">
-        <button class="btn-ghost hidden" id="overlayDeleteBtn" style="color:#f87171; border-color:rgba(248,113,113,0.3);">Supprimer</button>
-        <button class="btn-ghost hidden" id="overlayEditBtn" style="border-color:rgba(255,255,255,0.3);">Modifier</button>
-        <button class="btn-ghost" id="overlayMyListBtn">Ma Liste</button>
-        <button class="btn-ghost" id="overlayWatchTrailerBtn">Voir Trailer</button>
-        <button class="btn-primary" id="overlayWatchMovieBtn">Regarder le film</button>
-    </div>
-    <div class="overlay-poster"><img id="overlayPoster" src="" alt="Affiche" onerror="this.src='https://placehold.co/300x450?text=No+Poster'"></div>
-    <div class="overlay-title">Titre</div>
-    <div class="overlay-meta"></div>
-    <div style="margin-bottom:10px; font-size:0.85rem; color:#fff;">Avec : <span id="overlayActors" style="color:#a1a1aa;"></span></div>
-    <p class="overlay-desc">Description...</p>
-    <div class="overlay-footer">
-        <button class="btn-ghost hidden" id="overlayDeleteBtn" style="color:#f87171; border-color:rgba(248,113,113,0.3);">Supprimer</button>
-        <button class="btn-ghost hidden" id="overlayEditBtn" style="border-color:rgba(255,255,255,0.3);">Modifier</button>
-        <button class="btn-ghost" id="overlayMyListBtn">Ma Liste</button>
-        <button class="btn-ghost" id="overlayWatchTrailerBtn">Voir Trailer</button>
-        <button class="btn-primary" id="overlayWatchMovieBtn">Regarder le film</button>
-    </div>
     .overlay-poster { border-radius: 8px; overflow: hidden; aspect-ratio: 2/3; }
     .overlay-poster img { width: 100%; height: 100%; object-fit: cover; }
     .overlay-title { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
@@ -432,7 +397,9 @@
       .scroll-btn { width: 36px; height: 36px; font-size: 1.2rem; opacity: 0.7; }
       .floating-admin-btn { bottom: 20px; right: 20px; width: 50px; height: 50px; font-size: 2rem; }
     }
-  </style></head><body>
+  </style>
+</head>
+<body>
 
   <header id="mainHeader">
     <div class="header-left">
@@ -443,9 +410,14 @@
           <div class="logo-sub">Streaming Unlimited</div>
         </div>
       </div>
+      <nav class="main-nav">
+        <button id="navFilms" class="nav-btn active" onclick="switchView('films')">Films</button>
+        <button id="navSeries" class="nav-btn" onclick="switchView('series')">Séries</button>
+      </nav>
       <button id="addMovieBtn" class="btn-dev-primary hidden">Ajout film</button>
       <button id="addSeriesBtn" class="btn-dev hidden">Ajout série</button>
       <button id="addCategoryBtn" class="btn-dev hidden">Catégorie</button>
+      <button id="addEpisodeBtn" class="btn-dev hidden" onclick="openEpisodeAdmin()">Ajout Épisode</button>
     </div>
     <div class="header-right">
       <div class="search-wrapper">
@@ -483,7 +455,7 @@
 
   <div id="playerOverlay" class="player-overlay">
     <div class="player-header">
-        <div class="player-title" id="playerTitle">Titre du Film</div>
+        <div class="player-title" id="playerTitle">Titre du Contenu</div>
         <button class="btn-close-player" onclick="exitPlayer()">✕ QUITTER</button>
     </div>
     <video id="fullPlayer" class="player-video" controls preload="metadata"></video>
@@ -500,13 +472,13 @@
           <div style="margin-bottom:10px; font-size:0.85rem; color:#fff;">Avec : <span id="overlayActors" style="color:#a1a1aa;"></span></div>
           <p id="overlayDesc" class="overlay-desc">Description...</p>
           <div class="overlay-footer">
-            <button class="btn-ghost hidden" id="overlayDeleteBtn" style="color:#f87171; border-color:rgba(248,113,113,0.3);" aria-label="Supprimer le film">Supprimer</button>
-            <button class="btn-ghost hidden" id="overlayEditBtn" style="border-color:rgba(255,255,255,0.3);" aria-label="Modifier les détails du film">Modifier</button>
+            <button class="btn-ghost hidden" id="overlayDeleteBtn" style="color:#f87171; border-color:rgba(248,113,113,0.3);" aria-label="Supprimer le contenu">Supprimer</button>
+            <button class="btn-ghost hidden" id="overlayEditBtn" style="border-color:rgba(255,255,255,0.3);" aria-label="Modifier le contenu">Modifier</button>
             
             <button class="btn-ghost" id="overlayMyListBtn">Ma Liste</button>
 
             <button class="btn-ghost" id="overlayWatchTrailerBtn">Voir Trailer</button>
-            <button class="btn-primary" id="overlayWatchMovieBtn">Regarder le film</button>
+            <button class="btn-primary" id="overlayWatchMovieBtn">Regarder</button>
           </div>
         </div>
       </div>
@@ -547,7 +519,7 @@
   <div id="adminOverlay" class="overlay-backdrop overlay-hidden">
     <div class="overlay-dialog" style="max-width:500px; max-height:90vh; overflow-y:auto;">
       <button id="adminClose" class="overlay-close" aria-label="Fermer l'interface d'administration">✕</button>
-      <h2 id="adminTitle" class="overlay-title" style="font-size:1.5rem;">Ajouter</h2>
+      <h2 id="adminTitle" class="overlay-title" style="font-size:1.5rem;">Ajouter Film</h2>
       
       <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid rgba(168,85,247,0.3);">
           <label class="form-label" style="color:var(--accent);">★ Import automatique TMDB</label>
@@ -559,10 +531,10 @@
       </div>
 
       <form id="adminForm" style="display:flex; flex-direction:column; gap:8px;">
-        <div><label class="form-label">Titre *</label><input id="fieldName" class="form-input" required aria-label="Titre du film ou de la série"></div>
+        <div><label class="form-label">Titre *</label><input id="fieldName" class="form-input" required aria-label="Titre du film"></div>
         <div style="display:flex; gap:10px;">
           <div style="flex:1;"><label class="form-label">Année</label><input id="fieldYear" type="number" class="form-input" value="2024" aria-label="Année de sortie"></div>
-          <div style="flex:1;"><label class="form-label">Durée</label><input id="fieldDuration" class="form-input" placeholder="ex: 1h54" aria-label="Durée du film ou de la série"></div>
+          <div style="flex:1;"><label class="form-label">Durée</label><input id="fieldDuration" class="form-input" placeholder="ex: 1h54" aria-label="Durée du film"></div>
         </div>
         <div><label class="form-label">Genres</label><input id="fieldGenres" class="form-input" placeholder="Action, Drame..." aria-label="Genres séparés par des virgules"></div>
         <div><label class="form-label">Tags (catégories)</label><input id="fieldTags" class="form-input" placeholder="new, action..." aria-label="Tags séparés par des virgules"></div>
@@ -596,6 +568,62 @@
       <div id="categoryList" style="border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;"></div>
     </div>
   </div>
+  
+  <div id="adminSeriesOverlay" class="overlay-backdrop overlay-hidden">
+      <div class="overlay-dialog" style="max-width:500px; max-height:90vh; overflow-y:auto;">
+        <button id="adminSeriesClose" class="overlay-close" onclick="closeAllOverlays()">✕</button>
+        <h2 id="adminSeriesTitle" class="overlay-title" style="font-size:1.5rem;">Ajouter Série</h2>
+        
+        <form id="adminSeriesForm" style="display:flex; flex-direction:column; gap:8px;">
+          <div><label class="form-label">Titre Série *</label><input id="fieldSeriesName" class="form-input" required></div>
+          <div style="display:flex; gap:10px;">
+            <div style="flex:1;"><label class="form-label">Année</label><input id="fieldSeriesYear" type="number" class="form-input" value="2024"></div>
+            <div style="flex:1;"><label class="form-label">Genres</label><input id="fieldSeriesGenres" class="form-input" placeholder="Action, Drame..."></div>
+          </div>
+          <div><label class="form-label">Tags (catégories)</label><input id="fieldSeriesTags" class="form-input" placeholder="marvel, sf..."></div>
+          <div><label class="form-label">URL Affiche *</label><input id="fieldSeriesPoster" class="form-input" required></div>
+          
+          <div style="border-top:1px solid #333; margin-top:10px; padding-top:10px;">
+              <div><label class="form-label">URL Trailer (Série) *</label><input id="fieldSeriesTrailer" class="form-input" required></div>
+          </div>
+
+          <div><label class="form-label">Description Série</label><textarea id="fieldSeriesDescription" class="form-input" style="min-height:80px;"></textarea></div>
+          <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+            <button type="button" id="adminSeriesCancel" class="btn-ghost" onclick="closeAllOverlays()">Annuler</button>
+            <button type="submit" id="adminSeriesCreate" class="btn-primary">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+  </div>
+
+  <div id="adminEpisodeOverlay" class="overlay-backdrop overlay-hidden">
+      <div class="overlay-dialog" style="max-width:500px; max-height:90vh; overflow-y:auto;">
+        <button id="adminEpisodeClose" class="overlay-close" onclick="closeAllOverlays()">✕</button>
+        <h2 id="adminEpisodeTitle" class="overlay-title" style="font-size:1.5rem;">Ajouter Épisode</h2>
+        
+        <form id="adminEpisodeForm" style="display:flex; flex-direction:column; gap:8px;">
+          <div><label class="form-label">Série (ID ou Titre) *</label><input id="fieldEpisodeSeriesId" class="form-input" required placeholder="Ex: the-office-123"></div>
+          <div style="display:flex; gap:10px;">
+            <div style="flex:1;"><label class="form-label">Saison *</label><input id="fieldEpisodeSeason" type="number" class="form-input" value="1" required></div>
+            <div style="flex:1;"><label class="form-label">Ordre Épisode *</label><input id="fieldEpisodeOrder" type="number" class="form-input" value="1" required></div>
+          </div>
+          <div><label class="form-label">Titre Épisode *</label><input id="fieldEpisodeName" class="form-input" required></div>
+          <div><label class="form-label">Durée</label><input id="fieldEpisodeDuration" class="form-input" placeholder="ex: 45min"></div>
+          <div><label class="form-label">Acteurs</label><input id="fieldEpisodeCast" class="form-input"></div>
+          <div><label class="form-label">Description</label><textarea id="fieldEpisodeDescription" class="form-input" style="min-height:80px;"></textarea></div>
+          
+          <div style="border-top:1px solid #333; margin-top:10px; padding-top:10px;">
+              <div><label class="form-label">URL Vidéo Épisode (MP4/HLS) *</label><input id="fieldEpisodeUrl" class="form-input" required placeholder="https://.../episode.mp4"></div>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+            <button type="button" id="adminEpisodeCancel" class="btn-ghost" onclick="closeAllOverlays()">Annuler</button>
+            <button type="submit" id="adminEpisodeCreate" class="btn-primary">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+  </div>
+
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -603,7 +631,7 @@
 
   <script>
     // --- GLOBAL UTILITIES AND CONFIG ---
-    const TMDB_API_KEY = "8f5276da55d5885a7e3914aa74f5695f"; 
+    const TMDB_API_KEY = "8f5276da55d5885a7e3914aa74f5695f";     
     const TMDB_IMG_BASE = "https://image.tmdb.org/t/p/w500";
 
     const firebaseConfig = {
@@ -628,10 +656,13 @@
       { key: "thriller", label: "Thrillers" }
     ];
 
-    let movies = [], customCategories = [];
+    // --- NOUVELLES VARIABLES DE SÉRIE ---
+    let movies = [], series = [], episodes = [], customCategories = [];
     let currentUserData = null; 
     let userList = [], userProgress = {}; 
     let isDev = false;
+    let currentView = 'films'; // 'films' ou 'series'
+    let editingContentId = null; // ID utilisé pour l'édition de Film, Série ou Épisode
 
     // --- UTILITIES ---
     function normalizeText(text) { return (text || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
@@ -651,7 +682,8 @@
     let headerTimeout;
     const header = document.getElementById('mainHeader');
     const searchInputEl = document.getElementById('searchInput');
-
+    const searchResultsEl = document.getElementById('searchResults');
+    
     function showHeader() { header.classList.remove('header-auto-hide'); }
     function hideHeader() { if (document.activeElement === searchInputEl || header.matches(':hover')) return; header.classList.add('header-auto-hide'); }
     function resetHeaderTimer() { showHeader(); clearTimeout(headerTimeout); headerTimeout = setTimeout(hideHeader, 3000); }
@@ -662,6 +694,89 @@
         window.scrollTo({top:0, behavior:'smooth'});
         initHero();
     };
+
+    // --- VIEW SWITCHING ---
+    window.switchView = (view) => {
+        if (currentView === view) return;
+        currentView = view;
+
+        document.getElementById('navFilms').classList.remove('active');
+        document.getElementById('navSeries').classList.remove('active');
+        document.getElementById(`nav${view.charAt(0).toUpperCase() + view.slice(1)}`).classList.add('active');
+
+        // Gère la visibilité du bouton d'ajout Épisode
+        const addEpisodeBtn = document.getElementById('addEpisodeBtn');
+        if (isDev) {
+            if (view === 'series') addEpisodeBtn.classList.remove('hidden');
+            else addEpisodeBtn.classList.add('hidden');
+        } else {
+            addEpisodeBtn.classList.add('hidden');
+        }
+
+        // Réinitialise la recherche et recharge le contenu/hero
+        searchInputEl.value = '';
+        searchResultsEl.classList.remove('active');
+
+        renderAllRows();
+        initHero();
+    }
+
+
+    // --- SEARCH LOGIC (MISE À JOUR: filtre Films ou Séries) ---
+    function filterMovies() {
+        const query = normalizeText(searchInputEl.value.trim());
+        if (query.length < 2) {
+            searchResultsEl.classList.remove('active');
+            return;
+        }
+
+        const source = currentView === 'series' ? series : movies;
+        
+        // Filtre basé sur l'attribut de recherche pré-calculé _searchStr
+        const filtered = source.filter(m => m._searchStr && m._searchStr.includes(query));
+        renderSearchResults(filtered.slice(0, 5));
+    }
+
+    function renderSearchResults(results) {
+        searchResultsEl.innerHTML = '';
+        if (results.length === 0) {
+            searchResultsEl.innerHTML = `<div class="search-no-result">Aucun résultat trouvé.</div>`;
+            searchResultsEl.classList.add('active');
+            return;
+        }
+
+        results.forEach(m => {
+            const item = document.createElement('div');
+            item.className = 'search-result-item';
+            
+            item.onclick = (e) => {
+                e.stopPropagation();
+                closeAllOverlays();
+                // On passe le booléen pour savoir si c'est une série
+                openOverlay(m, currentView === 'series');
+                searchInputEl.value = '';
+                searchResultsEl.classList.remove('active');
+            };
+            item.innerHTML = `
+                <img src="${m.poster}" class="search-result-thumb" alt="Affiche de ${m.title}" onerror="this.src='https://placehold.co/40x60?text=IMG'">
+                <div class="search-result-info">
+                    <div class="search-result-title">${m.title}</div>
+                    <div class="search-result-meta">${m.year} • ${(m.genres || []).join(', ')}</div>
+                </div>
+            `;
+            searchResultsEl.appendChild(item);
+        });
+
+        searchResultsEl.classList.add('active');
+    }
+    
+    // Ferme la recherche si l'utilisateur clique ailleurs
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-wrapper')) {
+            searchResultsEl.classList.remove('active');
+        }
+    });
+
     
     // --- AUTOMATIC WATCH PROGRESS CLEANUP ---
     async function cleanOldWatchProgress() {
@@ -670,11 +785,11 @@
         const now = Date.now();
         let cleaned = false;
         
-        for (const movieId in userProgress) {
-            const progress = userProgress[movieId];
+        for (const contentId in userProgress) { 
+            const progress = userProgress[contentId];
             
             if (typeof progress !== 'object' || progress === null || !progress.lastUpdate) {
-                 delete userProgress[movieId];
+                 delete userProgress[contentId];
                  cleaned = true;
                  continue;
             }
@@ -682,7 +797,7 @@
             const isTooOld = (now - progress.lastUpdate > TEN_DAYS_MS);
             
             if (progress.completed || isTooOld) {
-                delete userProgress[movieId];
+                delete userProgress[contentId];
                 cleaned = true;
             }
         }
@@ -695,12 +810,12 @@
     }
     
     // --- MANUAL PROGRESS REMOVAL ---
-    window.removeFromWatchProgress = async (movieId) => {
+    window.removeFromWatchProgress = async (contentId) => {
         if (!currentUserData) { showToast("Connectez-vous pour gérer votre progression."); return; }
         
-        delete userProgress[movieId];
+        delete userProgress[contentId];
         
-        showToast("Film retiré de 'Reprendre la lecture'");
+        showToast("Contenu retiré de 'Reprendre la lecture'");
         renderAllRows(); 
         
         try {
@@ -709,12 +824,12 @@
         } catch(e) { console.error("Erreur suppression progression:", e); }
     }
 
-
+    // --- CORRECTION DU BLOCAGE: Assurer le chargement des données avant l'UI ---
     function initApp() {
         auth.onAuthStateChanged(async (user) => {
-            if(movies.length === 0) {
-                await Promise.all([ loadMovies(), loadCategories() ]);
-                initHero();
+            // S'assurer que le contenu et les catégories sont chargés en premier
+            if(movies.length === 0 && series.length === 0) {
+                await Promise.all([ loadContent(), loadCategories() ]);
             }
 
             if (user) {
@@ -728,15 +843,56 @@
                 userList = []; userProgress = {}; isDev = false;
             }
             
-            updateAccountUI();
-            renderAllRows();
+            updateAccountUI(); 
+            
+            // Initialise la section Hero
+            initHero();
+            
+            // --- CORRECTION ICI ---
+            // On force l'affichage directement au lieu de passer par switchView
+            // car switchView bloque si on est déjà sur la vue par défaut.
+            renderAllRows(); 
         });
         
+        searchInputEl.addEventListener('input', filterMovies);
+
         resetHeaderTimer();
         document.addEventListener('mousemove', () => { resetHeaderTimer(); });
         window.addEventListener("scroll", () => { if(window.scrollY > 50) header.classList.add("scrolled"); else header.classList.remove("scrolled"); });
         header.addEventListener('mouseenter', () => clearTimeout(headerTimeout));
         header.addEventListener('mouseleave', () => resetHeaderTimer());
+    }
+    
+    // --- MODIFICATION: CHARGE TOUS LES CONTENUS ---
+    async function loadContent() {
+      // Chargement des Films
+      movies = [];
+      const moviesSnap = await db.collection("movies").get();
+      moviesSnap.forEach(doc => {
+          const d = doc.data();
+          d.id = doc.id;
+          d._searchStr = normalizeText([d.title, (d.genres||[]).join(" "), (d.cast||[]).join(" "), d.year].join(" "));
+          movies.push(d);
+      });
+      
+      // Chargement des Séries
+      series = [];
+      const seriesSnap = await db.collection("series").get();
+      seriesSnap.forEach(doc => {
+          const d = doc.data();
+          d.id = doc.id;
+          d._searchStr = normalizeText([d.title, (d.genres||[]).join(" "), d.year].join(" "));
+          series.push(d);
+      });
+
+      // Chargement des Épisodes
+      episodes = [];
+      const episodesSnap = await db.collection("episodes").get();
+      episodesSnap.forEach(doc => {
+          const d = doc.data();
+          d.id = doc.id;
+          episodes.push(d);
+      });
     }
 
     async function loadUserData() {
@@ -748,10 +904,10 @@
             userProgress = data.watchProgress || {};
             
             // Normalize old progress structure (if it was just a number, convert to object)
-            for(const movieId in userProgress) {
-                if(typeof userProgress[movieId] !== 'object' || userProgress[movieId] === null || typeof userProgress[movieId] === 'number') {
-                    userProgress[movieId] = { 
-                        time: userProgress[movieId] || 0, 
+            for(const contentId in userProgress) {
+                if(typeof userProgress[contentId] !== 'object' || userProgress[contentId] === null || typeof userProgress[contentId] === 'number') {
+                    userProgress[contentId] = { 
+                        time: userProgress[contentId] || 0, 
                         lastUpdate: Date.now(), 
                         completed: false, 
                         duration: 0 
@@ -799,7 +955,7 @@
 
     function fillFormWithTMDB(tmdbData) {
         document.getElementById("fieldName").value = tmdbData.title;
-        document.getElementById("fieldYear").value = tmdbData.release_date ? tmdbData.release_date.split("-")[0] : 2024;
+        document.getElementById("fieldYear").value = tmdbData.release_date ? tmdbData.release_date.split("-")[0] : 2025;
         document.getElementById("fieldDescription").value = tmdbData.overview;
         document.getElementById("fieldPoster").value = TMDB_IMG_BASE + tmdbData.poster_path;
         document.getElementById("fieldTags").value = "new"; 
@@ -815,26 +971,16 @@
         alert("Infos remplies !");
     }
 
-    async function loadMovies() {
-      movies = [];
-      const snap = await db.collection("movies").get();
-      snap.forEach(doc => {
-          const d = doc.data();
-          d._searchStr = normalizeText([d.title, (d.genres||[]).join(" "), (d.cast||[]).join(" "), d.year].join(" "));
-          movies.push(d);
-      });
-    }
-
     async function saveMovie(m) {
         if(!isDev) return; 
-        if(!editingMovieId) {
+        if(!editingContentId) { 
             const existing = movies.find(exist => exist.title.toLowerCase() === m.title.toLowerCase());
             if(existing && !confirm("Ce film existe déjà ! Voulez-vous vraiment l'ajouter en double ?")) return false;
         }
 
         let toSave = {...m}; delete toSave._searchStr;
         try {
-            if(editingMovieId) await db.collection("movies").doc(editingMovieId).update(toSave);
+            if(editingContentId) await db.collection("movies").doc(editingContentId).update(toSave);
             else await db.collection("movies").doc(m.id).set(toSave);
             return true;
         } catch(e) { alert("Erreur sauvegarde admin"); return false; }
@@ -897,8 +1043,11 @@
 
 
     function initHero() {
-      trailerPool = shuffle(movies.filter(movieHasPlayableVideo));
-      if(!trailerPool.length) { heroTitle.textContent = "Bienvenue"; return; }
+      // Utilise la source de contenu appropriée
+      const source = currentView === 'series' ? series : movies;
+      trailerPool = shuffle(source.filter(movieHasPlayableVideo));
+      
+      if(!trailerPool.length) { heroTitle.textContent = "Bienvenue"; heroVideo.src = ""; return; }
       playHeroMovie(trailerPool[0]);
       
       heroVideo.onended = () => {
@@ -914,20 +1063,25 @@
           <path class="speaker" d="M11 5L6 9H2v6h4l5 4V5z" fill="currentColor" stroke="none"></path>          <path class="waves" d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>          <line class="cross" x1="3" y1="3" x2="21" y2="21"></line>        </svg>`;      updateMuteIcon();
     }
 
-    function playHeroMovie(movie) {
+    function playHeroMovie(content) { // Renommé 'content' pour film/série
       if(isMoviePlaying) return; 
-      heroVideo.src = movie.trailerUrl || movie.videoUrl;
+      heroVideo.src = content.trailerUrl || content.videoUrl;
       heroVideo.muted = true;
       heroVideo.play().catch(()=>{});
       updateMuteIcon();
-      heroTitle.textContent = movie.title;
-      heroDesc.textContent = movie.description;
-      heroMeta.innerHTML = `<span class="badge">${movie.year}</span><span class="badge">${movie.duration}</span><span class="badge">${(movie.genres||[]).slice(0,3).join(" • ")}</span>`;      
+      heroTitle.textContent = content.title;
+      heroDesc.textContent = content.description;
+      heroMeta.innerHTML = `<span class="badge">${content.year}</span><span class="badge">${content.duration || 'Série'}</span><span class="badge">${(content.genres||[]).slice(0,3).join(" • ")}</span>`;                        
+      const isSeries = content.type === 'serie';
+
       heroPlayBtn.onclick = () => {
-         const movieUrl = movie.videoUrl || movie.trailerUrl;
-         enterMovieMode(movieUrl, movie.id);
+         // Pour les séries, Play mène à l'overlay (car on ne sait pas quel épisode jouer)
+         if (isSeries) { openOverlay(content, true); return; }
+
+         const movieUrl = content.videoUrl || content.trailerUrl;
+         enterMovieMode(movieUrl, content.id, false);
       };
-      heroMoreBtn.onclick = () => openOverlay(movie);
+      heroMoreBtn.onclick = () => openOverlay(content, isSeries);
     }
     
     heroMuteBtn.onclick = () => { heroVideo.muted = !heroVideo.muted; updateMuteIcon(); };
@@ -943,20 +1097,30 @@
     
     // --- VIDEO PLAYER LOGIC ---
     fullPlayer.onended = () => {
-        const currentMovie = movies.find(m => m.id === currentMovieId);
-        if(currentMovie) saveWatchProgress(fullPlayer.duration, fullPlayer.duration, true);
+        // On utilise currentMovieId qui peut être un ID d'épisode
+        saveWatchProgress(fullPlayer.duration, fullPlayer.duration, true);
         exitPlayer();
     };
 
-    async function enterMovieMode(url, movieId) {
+    // Nouvelle signature pour gérer l'ID du contenu (film ou épisode) et si c'est un trailer
+    async function enterMovieMode(url, contentId, isTrailer = false) {
         if(!url) return alert("Erreur: Lien vidéo manquant pour ce contenu.");
         if(!currentUserData) showToast("Connectez-vous pour sauvegarder");
 
-        document.getElementById("playerTitle").innerText = movies.find(m => m.id === movieId)?.title || "";
+        // Trouver le contenu pour le titre (peut être film ou épisode)
+        const currentContent = movies.find(m => m.id === contentId) || episodes.find(e => e.id === contentId) || series.find(s => s.id === contentId);
+
+        document.getElementById("playerTitle").innerText = currentContent?.title || "";
+        // Si c'est un épisode, on ajoute le numéro de saison/épisode au titre du player
+        if (currentContent && currentContent.seriesId) {
+             const parentSeries = series.find(s => s.id === currentContent.seriesId)?.title || "Série";
+             document.getElementById("playerTitle").innerText = `${parentSeries} - S${currentContent.season}E${currentContent.episodeOrder}`;
+        }
+
         fullPlayer.src = url;
         
-        const savedProgress = userProgress[movieId] || { time: 0, completed: false, duration: 0 };
-        if(savedProgress.time > 5 && !savedProgress.completed) { 
+        const savedProgress = userProgress[contentId] || { time: 0, completed: false, duration: 0 };
+        if(!isTrailer && savedProgress.time > 5 && !savedProgress.completed) { 
             fullPlayer.currentTime = savedProgress.time; showToast("Reprise..."); 
         } else {
             fullPlayer.currentTime = 0;
@@ -966,18 +1130,18 @@
         fullPlayer.play();
         
         isMoviePlaying = true;
-        currentMovieId = movieId;
-        
+        currentMovieId = contentId; // ID du film ou de l'épisode
+        if(isTrailer) return; // Pas de progression pour le trailer
         fullPlayer.onloadedmetadata = () => {
-             const movieDuration = fullPlayer.duration;
+             const contentDuration = fullPlayer.duration;
              
              clearInterval(saveInterval);
              saveInterval = setInterval(() => {
                 if(!fullPlayer.paused) {
                     const currentTime = fullPlayer.currentTime;
-                    const isFinished = currentTime > 0 && movieDuration > 0 && currentTime >= movieDuration * 0.98;
+                    const isFinished = currentTime > 0 && contentDuration > 0 && currentTime >= contentDuration * 0.98;
                     
-                    saveWatchProgress(currentTime, movieDuration, isFinished);
+                    saveWatchProgress(currentTime, contentDuration, isFinished);
                     
                     if(isFinished) exitPlayer();
                 }
@@ -995,50 +1159,142 @@
         clearInterval(saveInterval);
         renderAllRows(); 
     };
-
     /* RENDU UI */
     const sectionsContainer = document.getElementById("sectionsContainer");
+    
     function renderAllRows() {
         sectionsContainer.innerHTML = "";
         
-        // --- RESUME ROW ---
-        const resumeMovies = movies.filter(m => {
-            const progress = userProgress[m.id];
-            return progress && typeof progress === 'object' && progress.time > 10 && !progress.completed;
+        const isSeriesView = currentView === 'series';
+        const contentSource = isSeriesView ? series : movies;
+        
+        // 1. REPRISE DE LECTURE
+        const resumeContent = contentSource.filter(m => {
+            if (!isSeriesView) {
+                const progress = userProgress[m.id];
+                return progress && typeof progress === 'object' && progress.time > 10 && !progress.completed;
+            } else {
+                const seriesEpisodes = episodes.filter(e => e.seriesId === m.id);
+                return seriesEpisodes.some(e => {
+                    const progress = userProgress[e.id];
+                    return progress && progress.time > 10 && !progress.completed;
+                });
+            }
         });
+        if(resumeContent.length) sectionsContainer.appendChild(createRowHtml("Reprendre la lecture", resumeContent, true, isSeriesView));
         
-        if(resumeMovies.length) sectionsContainer.appendChild(createRowHtml("Reprendre la lecture", resumeMovies, true));
-        
-        // --- MY LIST ROW ---
-        const myListMovies = movies.filter(m => userList.includes(m.id));
-        if(myListMovies.length) sectionsContainer.appendChild(createRowHtml("Ma Liste", myListMovies, false));
+        // 2. MA LISTE
+        const myListContent = contentSource.filter(m => userList.includes(m.id));
+        if(myListContent.length) sectionsContainer.appendChild(createRowHtml("Ma Liste", myListContent, false, isSeriesView));
 
-        // --- CATEGORY ROWS (SHUFFLED) ---
+        // 3. CATÉGORIES (Filtrage par tags)
         getAllCategories().forEach(cat => {
-            let catMovies = movies.filter(m => (m.tags||[]).includes(cat.key));
-            const shuffledMovies = shuffle(catMovies);
+            // Sécurité : on s'assure que m.tags existe
+            let catContent = contentSource.filter(m => (m.tags || []).includes(cat.key));
+            const shuffledContent = shuffle(catContent);
 
-            if(shuffledMovies.length) sectionsContainer.appendChild(createRowHtml(cat.label, shuffledMovies, false));
+            if(shuffledContent.length) sectionsContainer.appendChild(createRowHtml(cat.label, shuffledContent, false, isSeriesView));
         });
+
+        // 4. --- NOUVEAU : CATALOGUE COMPLET (Fallback) ---
+        // Cette section s'affiche toujours s'il y a du contenu, même sans tags.
+        if (contentSource.length > 0) {
+            // On mélange tout le contenu pour varier l'affichage
+            const allContentShuffled = shuffle([...contentSource]); 
+            // On affiche une limite de 20 éléments pour ne pas surcharger, ou tout si vous préférez
+            sectionsContainer.appendChild(createRowHtml("Catalogue Complet", allContentShuffled.slice(0, 20), false, isSeriesView));
+        } else {
+            // Message si vraiment vide
+            sectionsContainer.innerHTML += `<div style="padding:40px; text-align:center; color:#666;">Aucun contenu disponible pour le moment.</div>`;
+        }
         
+        // Réattacher les événements de clic
         document.querySelectorAll(".movie-card").forEach(card => {
             card.addEventListener("click", () => {
-                const m = movies.find(x => x.id === card.dataset.id);
-                if(m) openOverlay(m);
+                const contentFindFn = (id) => isSeriesView 
+                    ? series.find(x => x.id === id) 
+                    : movies.find(x => x.id === id);
+                
+                const content = contentFindFn(card.dataset.id);
+                if(content) openOverlay(content, isSeriesView);
             });
         });
     }
+    
+    // --- NOUVELLE FONCTION: RENDU DES ÉPISODES DANS L'OVERLAY ---
+    function renderSeriesEpisodes(seriesId) {
+        const seriesEpisodes = episodes.filter(e => e.seriesId === seriesId).sort((a, b) => a.season - b.season || a.episodeOrder - b.episodeOrder);
+        
+        if (seriesEpisodes.length === 0) return `<p>Aucun épisode disponible pour le moment.</p>`;
+        const seasons = [...new Set(seriesEpisodes.map(e => e.season))].sort((a, b) => a - b);
+        let html = '';
 
-    function createRowHtml(title, moviesList, isResumeRow) {
+        seasons.forEach(seasonNum => {
+            const seasonEpisodes = seriesEpisodes.filter(e => e.season === seasonNum);
+            
+            html += `
+                <details open style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                    <summary style="font-size: 1.1rem; font-weight: 600; cursor: pointer;">Saison ${seasonNum}</summary>                    <ul style="list-style: none; padding-left: 0; margin-top: 10px;">
+            `;
+            
+            seasonEpisodes.forEach(ep => {
+                const progress = userProgress[ep.id] || {time: 0, duration: 0};
+                const isInProgress = progress.time > 10 && !progress.completed;
+                
+                let status = '';
+                if (isInProgress) {
+                    const timeInMin = Math.floor(progress.time / 60);
+                    const percent = Math.floor((progress.time / progress.duration) * 100);
+                    status = `(Reprise à ${timeInMin} min / ${percent}%)`;
+                } else if (progress.completed) {
+                    status = `(Terminé)`;
+                }
+
+                html += `
+                    <li style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); cursor: pointer;" 
+                        onclick="closeAllOverlays(); enterMovieMode('${ep.videoUrl}', '${ep.id}', false)">
+                        <span>S${ep.season}E${ep.episodeOrder} - ${ep.title}</span>                        <span style="font-size: 0.8rem; color: ${isInProgress ? 'var(--accent)' : (progress.completed ? '#4ade80' : '#a1a1aa')};">${status} ▶</span>                    </li>                `;
+            });
+            
+            html += `</ul></details>`;
+        });
+
+        return html;
+    }
+
+
+    function createRowHtml(title, contentList, isResumeRow, isSeriesRow = false) {
         const sec = document.createElement("section");
-        const cards = moviesList.map(m => {
+        const cards = contentList.map(m => {
             let extra = "";
             let actionBtnHtml = ""; 
+            let contentId = m.id; // Par défaut, c'est l'ID du film/série
+            let itemType = m.title;
 
             if(isResumeRow) {
-                const progressData = userProgress[m.id] || {time: 0, duration: 0};
-                let progressPercent = 0;
+                let progressData = {time: 0, duration: 0};
+
+                if (isSeriesRow) {
+                    // SÉRIE: on cherche le dernier épisode regardé de cette série
+                    const resumeEpisode = episodes.filter(e => e.seriesId === m.id)
+                        .map(e => userProgress[e.id] ? { ...e, progress: userProgress[e.id] } : null)
+                        .filter(e => e && e.progress.time > 10 && !e.progress.completed) // N'affiche que ceux en cours
+                        .sort((a, b) => b.progress.lastUpdate - a.progress.lastUpdate)[0];
+
+                    if (resumeEpisode) {
+                        contentId = resumeEpisode.id; // ID de l'épisode pour la suppression/progression
+                        progressData = resumeEpisode.progress;
+                        itemType = `S${resumeEpisode.season}E${resumeEpisode.episodeOrder} - ${m.title}`;
+                    } else {
+                        return ''; 
+                    }
+
+                } else {
+                    // FILM
+                    progressData = userProgress[contentId] || {time: 0, duration: 0};
+                }
                 
+                let progressPercent = 0;
                 if(progressData.time > 0 && progressData.duration > 0) {
                      progressPercent = (progressData.time / progressData.duration) * 100;
                      if(progressPercent > 99) progressPercent = 99; 
@@ -1046,12 +1302,12 @@
                 
                 extra = `<div class="progress-container"><div class="progress-fill" style="width: ${progressPercent}%"></div></div>`;
                 
-                // Manual delete button for Resume row
+                // Bouton de suppression manuelle utilise l'ID du FILM ou de l'ÉPISODE
                 actionBtnHtml = `<button class="card-add-btn remove" 
-                                onclick="event.stopPropagation(); removeFromWatchProgress('${m.id}')"
-                                style="bottom: 8px; right: 10px;" aria-label="Supprimer de la liste de reprise">✕</button>`; 
+                                onclick="event.stopPropagation(); removeFromWatchProgress('${contentId}')"
+                                style="bottom: 8px; right: 10px;" aria-label="Supprimer de la liste de reprise">✕</button>`;
             } else {
-                // My List button logic for other rows
+                // My List button logic (toujours sur l'ID de l'entité principale : Film ou Série)
                 const isInList = userList.includes(m.id);
                 const isMyListRow = (title === "Ma Liste");
                 let btnClass = "card-add-btn";
@@ -1074,14 +1330,12 @@
 
             return `
             <div class="movie-card" data-id="${m.id}">
-              <div class="poster-wrapper"><img src="${m.poster}" loading="lazy" alt="${m.title} Affiche" onerror="this.src='https://placehold.co/200x300?text=No+Img'"></div>              ${extra}
-              ${actionBtnHtml} 
-              <div class="movie-title-mini">${m.title}</div>            </div>`;
-        }).join("");
+              <div class="poster-wrapper"><img src="${m.poster}" loading="lazy" alt="${itemType} Affiche" onerror="this.src='https://placehold.co/200x300?text=No+Img'"></div>              ${extra}              ${actionBtnHtml}               <div class="movie-title-mini">${itemType}</div>            </div>`;        }).join("");
 
         sec.innerHTML = `<div class="section-header"><h3 class="section-title">${title}</h3></div><div class="row-wrapper"><button class="scroll-btn left" onclick="scrollRow(this, -300)" aria-label="Défiler à gauche">‹</button><div class="movie-row">${cards}</div><button class="scroll-btn right" onclick="scrollRow(this, 300)" aria-label="Défiler à droite">›</button></div>`;
         return sec;
     }
+
 
     window.scrollRow = (btn, amount) => {
       btn.closest('.row-wrapper').querySelector('.movie-row').scrollBy({ left: amount, behavior: 'smooth' });
@@ -1089,26 +1343,61 @@
 
     /* OVERLAYS */
     const overlay = document.getElementById("overlay");
-    function openOverlay(m) {
+    // MODIFICATION: openOverlay prend maintenant le type de contenu
+    function openOverlay(m, isSeries = false) {
       document.getElementById("overlayPoster").src = m.poster;
       document.getElementById("overlayPoster").alt = `Affiche de ${m.title}`;
       document.getElementById("overlayTitle").textContent = m.title;
-      document.getElementById("overlayDesc").textContent = m.description;
-      document.getElementById("overlayActors").textContent = (m.cast||[]).join(", ");
-      document.getElementById("overlayMeta").textContent = `${m.year} • ${m.duration} • ${(m.genres||[]).join(", ")}`;
       
-      document.getElementById("overlayWatchMovieBtn").onclick = () => {
-         const movieUrl = m.videoUrl || m.trailerUrl;
-         closeAllOverlays();
-         enterMovieMode(movieUrl, m.id);
-      };
+      const btnWatchMovie = document.getElementById("overlayWatchMovieBtn");
+      const btnWatchTrailer = document.getElementById("overlayWatchTrailerBtn");
+      const overlayActorsEl = document.getElementById("overlayActors");
+      const overlayMetaEl = document.getElementById("overlayMeta");
+      const overlayDescEl = document.getElementById("overlayDesc");
       
-      document.getElementById("overlayWatchTrailerBtn").onclick = () => {
-         const movieUrl = m.trailerUrl || m.videoUrl;
-         closeAllOverlays();
-         enterMovieMode(movieUrl, m.id); 
-      };
-      
+      // --- LOGIQUE SPÉCIFIQUE AUX SÉRIES ---
+      if (isSeries) {
+          const actorsList = (m.cast || []).join(", ");
+          const genresList = (m.genres || []).join(", ");
+
+          overlayActorsEl.textContent = actorsList;
+          overlayMetaEl.textContent = `${m.year} • Série • ${genresList}`;
+          
+          // Affiche la description et la liste des épisodes en dessous
+          const episodesHtml = renderSeriesEpisodes(m.id);
+          overlayDescEl.innerHTML = `${m.description}<br><br><h3 style="margin-top:20px;">Épisodes</h3><div id="seriesEpisodeContainer">${episodesHtml}</div>`;
+          
+          btnWatchMovie.classList.add('hidden'); 
+          btnWatchTrailer.textContent = "Voir Trailer Série";
+          
+          btnWatchTrailer.onclick = () => {
+             closeAllOverlays();
+             // Le trailer utilise l'ID de la série
+             enterMovieMode(m.trailerUrl, m.id, true);
+          };
+
+      } else {
+          // LOGIQUE FILMS (Ancienne)
+          overlayActorsEl.textContent = (m.cast||[]).join(", ");
+          overlayMetaEl.textContent = `${m.year} • ${m.duration} • ${(m.genres||[]).join(" • ")}`;
+          overlayDescEl.innerHTML = m.description;
+
+          btnWatchMovie.classList.remove('hidden');
+          btnWatchTrailer.textContent = "Voir Trailer";
+
+          btnWatchMovie.onclick = () => {
+             const movieUrl = m.videoUrl || m.trailerUrl;
+             closeAllOverlays();
+             enterMovieMode(movieUrl, m.id, false);
+          };
+          btnWatchTrailer.onclick = () => {
+             const movieUrl = m.trailerUrl || m.videoUrl;
+             closeAllOverlays();
+             enterMovieMode(movieUrl, m.id, true); 
+          };
+      }
+
+
       const btnList = document.getElementById("overlayMyListBtn");
       const isInList = userList.includes(m.id);
       btnList.textContent = isInList ? "✓ Ma Liste" : "+ Ma Liste";
@@ -1118,13 +1407,24 @@
       const btnEdit = document.getElementById("overlayEditBtn");
       if(isDev) {
         btnDel.classList.remove("hidden"); btnEdit.classList.remove("hidden");
-        btnDel.onclick = async () => { if(confirm("Supprimer ?")) if(await deleteMovie(m.id)) location.reload(); }
-        btnEdit.onclick = () => { closeAllOverlays(); openAdmin(m.type, m); }
+        // Logique de suppression/modification pour Film ou Série
+        
+        btnDel.onclick = async () => { 
+            if(confirm(`Supprimer ${isSeries ? 'cette série' : 'ce film'} ?`)) {
+                const collection = isSeries ? "series" : "movies";
+                if(await db.collection(collection).doc(m.id).delete()) location.reload(); 
+            }
+        }
+        btnEdit.onclick = () => { 
+            closeAllOverlays(); 
+            if (isSeries) { openSeriesAdmin(m); } 
+            else { openAdmin('film', m); } 
+        }
       } else { btnDel.classList.add("hidden"); btnEdit.classList.add("hidden"); }
       overlay.classList.remove("overlay-hidden");
     }
 
-    // MISE À JOUR OPTIMISTE (INSTANTANÉE)    
+    // MISE À JOUR OPTIMISTE (INSTANTANÉE)
     async function toggleMyList(movieId) {
         if(!currentUserData) { showToast("Connectez-vous !"); return; }
 
@@ -1153,50 +1453,183 @@
         } catch(e) { console.error("Erreur sauvegarde liste:", e); }
     }
 
-    function closeAllOverlays() { document.querySelectorAll(".overlay-backdrop").forEach(el => el.classList.add("overlay-hidden")); }
+    function closeAllOverlays() { 
+      document.querySelectorAll(".overlay-backdrop").forEach(el => el.classList.add("overlay-hidden")); 
+    }
     document.querySelectorAll(".overlay-close").forEach(btn => btn.onclick = closeAllOverlays);
 
     /* ADMIN & UI */
     const adminOverlay = document.getElementById("adminOverlay"), catOverlay = document.getElementById("categoryOverlay"), accountOverlay = document.getElementById("accountOverlay");
+    const adminSeriesOverlay = document.getElementById("adminSeriesOverlay");
+    const adminEpisodeOverlay = document.getElementById("adminEpisodeOverlay");
     
     document.getElementById("floatingAdminBtn").onclick = () => {
         catOverlay.classList.remove("overlay-hidden");
         renderCatList();
     };
 
+    // MODIFIE LES GESTIONNAIRES DE BOUTONS ADMIN
     document.getElementById("addMovieBtn").onclick = () => openAdmin("film");
-    document.getElementById("addSeriesBtn").onclick = () => openAdmin("serie");
+    document.getElementById("addSeriesBtn").onclick = () => openSeriesAdmin(null);
     document.getElementById("addCategoryBtn").onclick = () => { catOverlay.classList.remove("overlay-hidden"); renderCatList(); };
     document.getElementById("accountBtn").onclick = () => accountOverlay.classList.remove("overlay-hidden");
 
-    let currentAdminType = "film", editingMovieId = null;
-    function openAdmin(type, movieToEdit = null) {
+    let currentAdminType = "film"; 
+
+    // MODIFICATION DE openAdmin: redirige pour les séries
+    function openAdmin(type, contentToEdit = null) {
       if(!isDev) return;
-      currentAdminType = type; document.getElementById("adminForm").reset(); document.getElementById("tmdbResults").innerHTML = ""; 
-      if(movieToEdit) {
-         editingMovieId = movieToEdit.id;
-         document.getElementById("adminTitle").textContent = "Modifier"; document.getElementById("adminCreate").textContent = "Mettre à jour";
-         document.getElementById("fieldName").value = movieToEdit.title;
-         document.getElementById("fieldYear").value = movieToEdit.year;
-         document.getElementById("fieldDuration").value = movieToEdit.duration;
-         document.getElementById("fieldGenres").value = movieToEdit.genres.join(", ");
-         document.getElementById("fieldTags").value = movieToEdit.tags.join(", ");
-         document.getElementById("fieldCast").value = movieToEdit.cast.join(", ");
-         document.getElementById("fieldPoster").value = movieToEdit.poster;
-         document.getElementById("fieldTrailer").value = movieToEdit.trailerUrl;
-         document.getElementById("fieldMovieUrl").value = movieToEdit.videoUrl;
-         document.getElementById("fieldDescription").value = movieToEdit.description;
+      currentAdminType = type; 
+
+      if (type === 'serie') {
+          openSeriesAdmin(contentToEdit);
+          return;
+      }
+      
+      // LOGIQUE FILMS (ancienne)
+      document.getElementById("adminForm").reset(); document.getElementById("tmdbResults").innerHTML = ""; 
+      
+      if(contentToEdit) {
+         editingContentId = contentToEdit.id;
+         document.getElementById("adminTitle").textContent = "Modifier Film"; 
+         document.getElementById("adminCreate").textContent = "Mettre à jour";
+         // Remplissage des champs
+         document.getElementById("fieldName").value = contentToEdit.title;
+         document.getElementById("fieldYear").value = contentToEdit.year;
+         document.getElementById("fieldDuration").value = contentToEdit.duration;
+         document.getElementById("fieldGenres").value = contentToEdit.genres.join(", ");
+         document.getElementById("fieldTags").value = contentToEdit.tags.join(", ");
+         document.getElementById("fieldCast").value = contentToEdit.cast.join(", ");
+         document.getElementById("fieldPoster").value = contentToEdit.poster;
+         document.getElementById("fieldTrailer").value = contentToEdit.trailerUrl;
+         document.getElementById("fieldMovieUrl").value = contentToEdit.videoUrl;
+         document.getElementById("fieldDescription").value = contentToEdit.description;
+
       } else {
-         editingMovieId = null; document.getElementById("adminTitle").textContent = "Ajouter"; document.getElementById("adminCreate").textContent = "Ajouter";
+         editingContentId = null; 
+         document.getElementById("adminTitle").textContent = "Ajouter Film"; 
+         document.getElementById("adminCreate").textContent = "Ajouter";
       }
       adminOverlay.classList.remove("overlay-hidden");
     }
 
+    // --- NOUVELLES FONCTIONS ADMIN SÉRIES ---
+    function openSeriesAdmin(seriesToEdit = null) {
+        document.getElementById("adminSeriesForm").reset(); 
+        document.getElementById("adminSeriesClose").onclick = closeAllOverlays; 
+
+        if(seriesToEdit) {
+            editingContentId = seriesToEdit.id;
+            document.getElementById("adminSeriesTitle").textContent = `Modifier Série: ${seriesToEdit.title}`;
+            document.getElementById("adminSeriesCreate").textContent = "Mettre à jour";
+            // Remplissage des champs de série
+            document.getElementById("fieldSeriesName").value = seriesToEdit.title;
+            document.getElementById("fieldSeriesYear").value = seriesToEdit.year;
+            document.getElementById("fieldSeriesGenres").value = (seriesToEdit.genres || []).join(", ");
+            document.getElementById("fieldSeriesTags").value = (seriesToEdit.tags || []).join(", ");
+            document.getElementById("fieldSeriesPoster").value = seriesToEdit.poster;
+            document.getElementById("fieldSeriesTrailer").value = seriesToEdit.trailerUrl;
+            document.getElementById("fieldSeriesDescription").value = seriesToEdit.description;
+        } else {
+            editingContentId = null;
+            document.getElementById("adminSeriesTitle").textContent = "Ajouter Série";
+            document.getElementById("adminSeriesCreate").textContent = "Ajouter";
+        }
+        adminSeriesOverlay.classList.remove("overlay-hidden");
+    }
+    
+    // Soumission du formulaire Série
+    document.getElementById("adminSeriesForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const title = document.getElementById("fieldSeriesName").value;
+        const newSeries = {
+            id: editingContentId ? editingContentId : slugify(title) + "-" + Date.now(),
+            type: 'serie',
+            dateAdded: Date.now(),
+            title: title,
+            year: parseInt(document.getElementById("fieldSeriesYear").value), 
+            genres: document.getElementById("fieldSeriesGenres").value.split(",").map(s=>s.trim()).filter(Boolean),
+            tags: document.getElementById("fieldSeriesTags").value.split(",").map(s=>s.trim().toLowerCase()).filter(Boolean),
+            poster: document.getElementById("fieldSeriesPoster").value, 
+            trailerUrl: document.getElementById("fieldSeriesTrailer").value,
+            description: document.getElementById("fieldSeriesDescription").value
+        };
+        newSeries._searchStr = normalizeText([newSeries.title, ...newSeries.genres, newSeries.year].join(" "));
+
+        try {
+            await db.collection("series").doc(newSeries.id).set(newSeries, { merge: true });
+            closeAllOverlays();
+            location.reload();
+        } catch(err) { alert("Erreur sauvegarde série: " + err.message); }
+    };
+    
+    // Fonction d'Admin pour les Épisodes (à appeler depuis un bouton adminSeriesOverlay ou la console)
+    window.openEpisodeAdmin = (seriesId = '', episodeToEdit = null) => {
+        document.getElementById("adminEpisodeForm").reset(); 
+        document.getElementById("fieldEpisodeSeriesId").value = seriesId;
+        document.getElementById("adminEpisodeClose").onclick = closeAllOverlays; 
+
+        editingContentId = null; 
+        if(episodeToEdit) {
+            editingContentId = episodeToEdit.id;
+            document.getElementById("adminEpisodeTitle").textContent = `Modifier Épisode: S${episodeToEdit.season}E${episodeToEdit.episodeOrder}`;
+            // Remplissage des champs d'épisode
+            document.getElementById("fieldEpisodeSeriesId").value = episodeToEdit.seriesId;
+            document.getElementById("fieldEpisodeSeason").value = episodeToEdit.season;
+            document.getElementById("fieldEpisodeOrder").value = episodeToEdit.episodeOrder;
+            document.getElementById("fieldEpisodeName").value = episodeToEdit.title;
+            document.getElementById("fieldEpisodeDuration").value = episodeToEdit.duration;
+            document.getElementById("fieldEpisodeCast").value = (episodeToEdit.cast || []).join(", ");
+            document.getElementById("fieldEpisodeDescription").value = episodeToEdit.description;
+            document.getElementById("fieldEpisodeUrl").value = episodeToEdit.videoUrl;
+        } else {
+             document.getElementById("adminEpisodeTitle").textContent = "Ajouter Nouvel Épisode";
+        }
+
+        adminEpisodeOverlay.classList.remove("overlay-hidden");
+    };
+
+    // Soumission du formulaire Épisode
+    document.getElementById("adminEpisodeForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const seriesId = document.getElementById("fieldEpisodeSeriesId").value;
+        const season = parseInt(document.getElementById("fieldEpisodeSeason").value);
+        const order = parseInt(document.getElementById("fieldEpisodeOrder").value);
+        const title = document.getElementById("fieldEpisodeName").value;
+        
+        // Crée un ID unique basé sur la série, saison, et ordre
+        const baseId = slugify(seriesId + "-s" + season + "-e" + order);
+        const episodeId = editingContentId ? editingContentId : baseId + "-" + Date.now();
+
+        const newEpisode = {
+            id: episodeId,
+            seriesId: seriesId,
+            title: title,
+            season: season,
+            episodeOrder: order,
+            duration: document.getElementById("fieldEpisodeDuration").value,
+            cast: document.getElementById("fieldEpisodeCast").value.split(",").map(s=>s.trim()).filter(Boolean),
+            description: document.getElementById("fieldEpisodeDescription").value,
+            videoUrl: document.getElementById("fieldEpisodeUrl").value,
+            dateAdded: Date.now(),
+            type: 'episode' // Ajout du type pour la clarté
+        };
+        
+        try {
+            await db.collection("episodes").doc(newEpisode.id).set(newEpisode, { merge: true });
+            closeAllOverlays();
+            location.reload();
+        } catch(err) { alert("Erreur sauvegarde épisode: " + err.message); }
+    };
+
+
+    // --- MISE À JOUR: SAUVEGARDE FILM (adminForm onsubmit) ---
     document.getElementById("adminForm").onsubmit = async (e) => {
       e.preventDefault();
       const title = document.getElementById("fieldName").value;
       const newMovie = {
-        id: editingMovieId ? editingMovieId : slugify(title) + "-" + Date.now(),
+        // Utilise editingContentId
+        id: editingContentId ? editingContentId : slugify(title) + "-" + Date.now(),
         dateAdded: Date.now(),
         type: currentAdminType, title: title,
         year: parseInt(document.getElementById("fieldYear").value), 
@@ -1210,7 +1643,13 @@
         description: document.getElementById("fieldDescription").value
       };
       newMovie._searchStr = normalizeText([newMovie.title, ...newMovie.genres, ...newMovie.cast, newMovie.year].join(" "));
-      if(await saveMovie(newMovie)) { closeAllOverlays(); location.reload(); }
+      
+      try {
+          if(await saveMovie(newMovie)) { 
+              closeAllOverlays(); 
+              location.reload(); 
+          }
+      } catch(err) { alert("Erreur sauvegarde film: " + err.message); }
     };
     document.getElementById("adminCancel").onclick = closeAllOverlays;
 
@@ -1221,7 +1660,9 @@
       if(await saveCategory({ key: k, label: l })) { customCategories.push({ key: k, label: l }); renderCatList(); renderAllRows(); document.getElementById("categoryForm").reset(); }
     };
     function renderCatList() {
-      document.getElementById("categoryList").innerHTML = customCategories.map(c => `<div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.8rem;"><span>${c.label} (${c.key})</span><span style="color:red; cursor:pointer;" onclick="removeCat('${c.key}')">Suppr.</span></div>`);    }    
+      document.getElementById("categoryList").innerHTML = customCategories.map(c => `<div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.8rem;"><span>${c.label} (${c.key})</span><span style="color:red; cursor:pointer;" onclick="removeCat('${c.key}')">Suppr.</span></div>`);
+    }
+
     window.removeCat = async (k) => {
       if(!confirm("Supprimer ?")) return;
       if(await deleteCategory(k)) { customCategories = customCategories.filter(c => c.key !== k); renderCatList(); renderAllRows(); }
@@ -1242,23 +1683,46 @@
     };
     document.getElementById("logoutBtn").onclick = () => { auth.signOut().then(() => { closeAllOverlays(); showToast("Déconnecté"); }); };
 
+    // --- CORRECTION: MISE À JOUR UI ADMIN ---
     function updateAccountUI() {
       const btn = document.getElementById("accountBtn"), logoutSec = document.getElementById("logoutSection");
       const userLabel = document.getElementById("currentUserLabel");
       const floatBtn = document.getElementById("floatingAdminBtn");
-
-      if(currentUserData) { btn.textContent = "Mon Compte"; userLabel.textContent = currentUserData.email; logoutSec.classList.remove("hidden"); formLogin.classList.add("hidden"); } 
-      else { btn.textContent = "Connexion"; logoutSec.classList.add("hidden"); formLogin.classList.remove("hidden"); }
       
-      const devs = [document.getElementById("addMovieBtn"), document.getElementById("addSeriesBtn"), document.getElementById("addCategoryBtn")];
+      const addMovieBtn = document.getElementById("addMovieBtn");
+      const addSeriesBtn = document.getElementById("addSeriesBtn");
+      const addCategoryBtn = document.getElementById("addCategoryBtn");
+      const addEpisodeBtn = document.getElementById("addEpisodeBtn"); 
+
+      if(currentUserData) { 
+        btn.textContent = "Mon Compte"; 
+        userLabel.textContent = currentUserData.email; 
+        logoutSec.classList.remove("hidden"); 
+        formLogin.classList.add("hidden"); 
+      } else { 
+        btn.textContent = "Connexion"; 
+        logoutSec.classList.add("hidden"); 
+        formLogin.classList.remove("hidden"); 
+      }
+      
       if(isDev) {
-          devs.forEach(b => b.classList.remove("hidden"));
+          addMovieBtn.classList.remove("hidden");
+          addSeriesBtn.classList.remove("hidden");
+          addCategoryBtn.classList.remove("hidden");
           floatBtn.classList.remove("hidden");
+          // Contrôle la visibilité du bouton Épisode en fonction de la vue
+          if (currentView === 'series') addEpisodeBtn.classList.remove('hidden');
+          else addEpisodeBtn.classList.add('hidden');
       } else {
-          devs.forEach(b => b.classList.add("hidden"));
+          addMovieBtn.classList.add("hidden");
+          addSeriesBtn.classList.add("hidden");
+          addCategoryBtn.classList.add("hidden");
+          addEpisodeBtn.classList.add("hidden");
           floatBtn.classList.add("hidden");
       }
     }
 
     document.addEventListener("DOMContentLoaded", initApp);
-  </script></body></html>
+  </script>
+</body>
+</html>
