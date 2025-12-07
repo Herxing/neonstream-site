@@ -11,6 +11,8 @@
 
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <meta name="description" content="NeonStream - Streaming">
+  
+  <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
   <style>
     :root {
@@ -397,9 +399,7 @@
       .scroll-btn { width: 36px; height: 36px; font-size: 1.2rem; opacity: 0.7; }
       .floating-admin-btn { bottom: 20px; right: 20px; width: 50px; height: 50px; font-size: 2rem; }
     }
-  </style>
-</head>
-<body>
+  </style></head><body>
 
   <header id="mainHeader">
     <div class="header-left">
@@ -624,30 +624,13 @@
       </div>
   </div>
 
-
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-
   <script>
-    // --- GLOBAL UTILITIES AND CONFIG ---
+    // --- POCKETBASE CONFIG ---
+    const pb = new PocketBase('https://néonstream.fr'); // Connexion à votre VPS
+
+    // --- GLOBAL VARIABLES ---
     const TMDB_API_KEY = "8f5276da55d5885a7e3914aa74f5695f";     
     const TMDB_IMG_BASE = "https://image.tmdb.org/t/p/w500";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAbfM7mh_uGhxXRRMewWNSY3_Fv3mjDJdI",
-      authDomain: "neonstream-a1c6e.firebaseapp.com",
-      projectId: "neonstream-a1c6e",
-      storageBucket: "neonstream-a1c6e.firebasestorage.app",
-      messagingSenderId: "799721923216",
-      appId: "1:799721923216:web:111dc1985b6dc2acbeee15",
-      measurementId: "G-7ZZ06H971F"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const auth = firebase.auth();
-
-    const ADMIN_UIDS = ["KR7yODJYmefEw9D06poPRNIQF7w1"];
 
     const builtInCategories = [
       { key: "new", label: "Nouveautés" },
@@ -656,21 +639,18 @@
       { key: "thriller", label: "Thrillers" }
     ];
 
-    // --- NOUVELLES VARIABLES DE SÉRIE ---
     let movies = [], series = [], episodes = [], customCategories = [];
     let currentUserData = null; 
     let userList = [], userProgress = {}; 
     let isDev = false;
-    let currentView = 'films'; // 'films' ou 'series'
-    let editingContentId = null; // ID utilisé pour l'édition de Film, Série ou Épisode
+    let currentView = 'films';
+    let editingContentId = null;
 
     // --- UTILITIES ---
     function normalizeText(text) { return (text || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
-    function slugify(str) { return normalizeText(str).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""); }
     function shuffle(array) { return [...array].sort(() => Math.random() - 0.5); }
     function movieHasPlayableVideo(m) { return !!(m.trailerUrl || m.videoUrl); }
     
-    // --- TOAST FUNCTION ---
     function showToast(msg){
       const t = document.getElementById("toast");
       t.textContent = msg;
@@ -713,27 +693,24 @@
             addEpisodeBtn.classList.add('hidden');
         }
 
-        // Réinitialise la recherche et recharge le contenu/hero
         searchInputEl.value = '';
         searchResultsEl.classList.remove('active');
-
         renderAllRows();
         initHero();
     }
 
-
-    // --- SEARCH LOGIC (MISE À JOUR: filtre Films ou Séries) ---
+    // --- SEARCH ---
     function filterMovies() {
         const query = normalizeText(searchInputEl.value.trim());
         if (query.length < 2) {
             searchResultsEl.classList.remove('active');
             return;
         }
-
         const source = currentView === 'series' ? series : movies;
-        
-        // Filtre basé sur l'attribut de recherche pré-calculé _searchStr
-        const filtered = source.filter(m => m._searchStr && m._searchStr.includes(query));
+        const filtered = source.filter(m => {
+            const searchStr = normalizeText([m.title, (m.genres||'').toString(), m.year].join(" "));
+            return searchStr.includes(query);
+        });
         renderSearchResults(filtered.slice(0, 5));
     }
 
@@ -744,15 +721,12 @@
             searchResultsEl.classList.add('active');
             return;
         }
-
         results.forEach(m => {
             const item = document.createElement('div');
             item.className = 'search-result-item';
-            
             item.onclick = (e) => {
                 e.stopPropagation();
                 closeAllOverlays();
-                // On passe le booléen pour savoir si c'est une série
                 openOverlay(m, currentView === 'series');
                 searchInputEl.value = '';
                 searchResultsEl.classList.remove('active');
@@ -761,24 +735,20 @@
                 <img src="${m.poster}" class="search-result-thumb" alt="Affiche de ${m.title}" onerror="this.src='https://placehold.co/40x60?text=IMG'">
                 <div class="search-result-info">
                     <div class="search-result-title">${m.title}</div>
-                    <div class="search-result-meta">${m.year} • ${(m.genres || []).join(', ')}</div>
-                </div>
-            `;
+                    <div class="search-result-meta">${m.year} • ${m.genres || ''}</div>
+                </div>`;
             searchResultsEl.appendChild(item);
         });
-
         searchResultsEl.classList.add('active');
     }
     
-    // Ferme la recherche si l'utilisateur clique ailleurs
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.search-wrapper')) {
             searchResultsEl.classList.remove('active');
         }
     });
 
-    
-    // --- AUTOMATIC WATCH PROGRESS CLEANUP ---
+    // --- WATCH PROGRESS (WITH POCKETBASE) ---
     async function cleanOldWatchProgress() {
         if(!currentUserData) return;
         const TEN_DAYS_MS = 10 * 24 * 60 * 60 * 1000;
@@ -787,75 +757,55 @@
         
         for (const contentId in userProgress) { 
             const progress = userProgress[contentId];
-            
-            if (typeof progress !== 'object' || progress === null || !progress.lastUpdate) {
-                 delete userProgress[contentId];
-                 cleaned = true;
-                 continue;
+            if (typeof progress !== 'object' || !progress.lastUpdate) {
+                 delete userProgress[contentId]; cleaned = true; continue;
             }
-
-            const isTooOld = (now - progress.lastUpdate > TEN_DAYS_MS);
-            
-            if (progress.completed || isTooOld) {
-                delete userProgress[contentId];
-                cleaned = true;
+            if (progress.completed || (now - progress.lastUpdate > TEN_DAYS_MS)) {
+                delete userProgress[contentId]; cleaned = true;
             }
         }
         
         if (cleaned) {
             try {
-                await db.collection("users").doc(currentUserData.uid).update({ watchProgress: userProgress });
-            } catch(e) { console.error("Erreur nettoyage auto:", e); }
+                await pb.collection("users").update(currentUserData.id, { watchProgress: userProgress });
+            } catch(e) {}
         }
     }
     
-    // --- MANUAL PROGRESS REMOVAL ---
     window.removeFromWatchProgress = async (contentId) => {
-        if (!currentUserData) { showToast("Connectez-vous pour gérer votre progression."); return; }
-        
+        if (!currentUserData) { showToast("Connectez-vous"); return; }
         delete userProgress[contentId];
-        
-        showToast("Contenu retiré de 'Reprendre la lecture'");
+        showToast("Retiré");
         renderAllRows(); 
-        
         try {
-            const updatedProgress = { ...userProgress };
-            await db.collection("users").doc(currentUserData.uid).update({ watchProgress: updatedProgress });
+            await pb.collection("users").update(currentUserData.id, { watchProgress: userProgress });
         } catch(e) { console.error("Erreur suppression progression:", e); }
     }
 
-    // --- CORRECTION DU BLOCAGE: Assurer le chargement des données avant l'UI ---
+    // --- MAIN INIT ---
     function initApp() {
-        auth.onAuthStateChanged(async (user) => {
-            // S'assurer que le contenu et les catégories sont chargés en premier
-            if(movies.length === 0 && series.length === 0) {
-                await Promise.all([ loadContent(), loadCategories() ]);
-            }
-
-            if (user) {
-                currentUserData = user;
-                isDev = ADMIN_UIDS.includes(user.uid);
-                await loadUserData();
-                if(isDev) checkExpiredNewTags();
+        // Auth State Change
+        pb.authStore.onChange(async (token, model) => {
+            if (model) {
+                currentUserData = model;
+                isDev = true; // Par défaut on active le mode dev pour le test, à sécuriser plus tard
+                userList = model.myList || [];
+                userProgress = model.watchProgress || {};
+                await loadContent();
                 cleanOldWatchProgress();
             } else {
                 currentUserData = null;
-                userList = []; userProgress = {}; isDev = false;
+                userList = [];
+                userProgress = {};
+                isDev = false;
+                await loadContent(); // Load content even if logged out
             }
-            
-            updateAccountUI(); 
-            
-            // Initialise la section Hero
+            updateAccountUI();
             initHero();
-            
-            // --- CORRECTION ICI ---
-            // On force l'affichage directement au lieu de passer par switchView
-            // car switchView bloque si on est déjà sur la vue par défaut.
-            renderAllRows(); 
-        });
-        
-        searchInputEl.addEventListener('input', filterMovies);
+            renderAllRows();
+        }, true); // Trigger immediately
 
+        searchInputEl.addEventListener('input', filterMovies);
         resetHeaderTimer();
         document.addEventListener('mousemove', () => { resetHeaderTimer(); });
         window.addEventListener("scroll", () => { if(window.scrollY > 50) header.classList.add("scrolled"); else header.classList.remove("scrolled"); });
@@ -863,71 +813,17 @@
         header.addEventListener('mouseleave', () => resetHeaderTimer());
     }
     
-    // --- MODIFICATION: CHARGE TOUS LES CONTENUS ---
     async function loadContent() {
-      // Chargement des Films
-      movies = [];
-      const moviesSnap = await db.collection("movies").get();
-      moviesSnap.forEach(doc => {
-          const d = doc.data();
-          d.id = doc.id;
-          d._searchStr = normalizeText([d.title, (d.genres||[]).join(" "), (d.cast||[]).join(" "), d.year].join(" "));
-          movies.push(d);
-      });
-      
-      // Chargement des Séries
-      series = [];
-      const seriesSnap = await db.collection("series").get();
-      seriesSnap.forEach(doc => {
-          const d = doc.data();
-          d.id = doc.id;
-          d._searchStr = normalizeText([d.title, (d.genres||[]).join(" "), d.year].join(" "));
-          series.push(d);
-      });
-
-      // Chargement des Épisodes
-      episodes = [];
-      const episodesSnap = await db.collection("episodes").get();
-      episodesSnap.forEach(doc => {
-          const d = doc.data();
-          d.id = doc.id;
-          episodes.push(d);
-      });
-    }
-
-    async function loadUserData() {
-        if(!currentUserData) return;
-        const doc = await db.collection("users").doc(currentUserData.uid).get();
-        if(doc.exists) {
-            const data = doc.data();
-            userList = data.myList || [];
-            userProgress = data.watchProgress || {};
-            
-            // Normalize old progress structure (if it was just a number, convert to object)
-            for(const contentId in userProgress) {
-                if(typeof userProgress[contentId] !== 'object' || userProgress[contentId] === null || typeof userProgress[contentId] === 'number') {
-                    userProgress[contentId] = { 
-                        time: userProgress[contentId] || 0, 
-                        lastUpdate: Date.now(), 
-                        completed: false, 
-                        duration: 0 
-                    };
-                }
-            }
-        }
-    }
-
-    async function checkExpiredNewTags() {
-        const TEN_DAYS = 10 * 24 * 60 * 60 * 1000;
-        const now = Date.now();
-        movies.forEach(async m => {
-            if(m.tags && m.tags.includes('new') && m.dateAdded) {
-                if(now - m.dateAdded > TEN_DAYS) {
-                    const newTags = m.tags.filter(t => t !== 'new');
-                    await db.collection("movies").doc(m.id).update({ tags: newTags });
-                }
-            }
-        });
+      try {
+          // Load Movies
+          movies = await pb.collection('movies').getFullList({ sort: '-created' });
+          // Load Series
+          series = await pb.collection('series').getFullList({ sort: '-created' });
+          // Load Episodes
+          episodes = await pb.collection('episodes').getFullList({ sort: 'season,episodeOrder' });
+      } catch (e) {
+          console.log("Erreur chargement (Peut-être vide):", e);
+      }
     }
 
     /* TMDB */
@@ -945,7 +841,6 @@
                if(!m.poster_path) return;
                const img = document.createElement("img");
                img.src = TMDB_IMG_BASE + m.poster_path;
-               img.alt = `Affiche de ${m.title}`;
                img.style.height = "80px"; img.style.cursor = "pointer"; img.style.borderRadius = "4px";
                img.onclick = () => fillFormWithTMDB(m);
                resDiv.appendChild(img);
@@ -973,40 +868,14 @@
 
     async function saveMovie(m) {
         if(!isDev) return; 
-        if(!editingContentId) { 
-            const existing = movies.find(exist => exist.title.toLowerCase() === m.title.toLowerCase());
-            if(existing && !confirm("Ce film existe déjà ! Voulez-vous vraiment l'ajouter en double ?")) return false;
-        }
-
-        let toSave = {...m}; delete toSave._searchStr;
         try {
-            if(editingContentId) await db.collection("movies").doc(editingContentId).update(toSave);
-            else await db.collection("movies").doc(m.id).set(toSave);
+            if(editingContentId) await pb.collection("movies").update(editingContentId, m);
+            else await pb.collection("movies").create(m);
             return true;
-        } catch(e) { alert("Erreur sauvegarde admin"); return false; }
+        } catch(e) { alert("Erreur sauvegarde admin: " + e.message); return false; }
     }
 
-    async function deleteMovie(id) { 
-        try { await db.collection("movies").doc(id).delete(); return true; } 
-        catch(e) { alert("Erreur suppression"); return false; }
-    }
-
-    async function loadCategories() {
-      customCategories = [];
-      const snap = await db.collection("categories").get();
-      snap.forEach(d => customCategories.push(d.data()));
-    }
-    async function saveCategory(c) { 
-        try { await db.collection("categories").doc(c.key).set(c); return true; } 
-        catch(e) { return false; }
-    }
-    async function deleteCategory(k) { 
-        try { await db.collection("categories").doc(k).delete(); return true; }
-        catch(e) { return false; }
-    }
-    function getAllCategories() { return [...builtInCategories, ...customCategories]; }
-
-    /* HERO */
+    // --- HERO ---
     const heroVideo = document.getElementById("heroTrailer");
     const heroTitle = document.getElementById("heroTitle");
     const heroMeta = document.getElementById("heroMeta");
@@ -1014,36 +883,22 @@
     const heroPlayBtn = document.getElementById("heroPlayBtn");
     const heroMoreBtn = document.getElementById("heroMoreBtn");
     const heroMuteBtn = document.getElementById("heroMuteBtn");
-    const heroContainer = document.getElementById("heroContainer");
     
     let trailerPool = [], currentHeroIndex = 0, isMoviePlaying = false, currentMovieId = null, saveInterval = null;
 
-    // --- WATCH PROGRESS SAVING ---
     function saveWatchProgress(time, duration, isCompleted = false) {
       if(!currentUserData || !currentMovieId) return; 
       
-      const progressData = {
-          time: time,
-          lastUpdate: Date.now(),
-          completed: isCompleted,
-          duration: duration 
-      };
-      
+      const progressData = { time: time, lastUpdate: Date.now(), completed: isCompleted, duration: duration };
       userProgress[currentMovieId] = progressData; 
 
-      // Save to Firestore
-      db.collection("users").doc(currentUserData.uid).set({ 
-          watchProgress: { [currentMovieId]: progressData } 
-      }, { merge: true });
+      // Save to PocketBase
+      pb.collection("users").update(currentUserData.id, { watchProgress: userProgress });
       
-      if(isCompleted) {
-          clearInterval(saveInterval);
-      }
+      if(isCompleted) clearInterval(saveInterval);
     }
 
-
     function initHero() {
-      // Utilise la source de contenu appropriée
       const source = currentView === 'series' ? series : movies;
       trailerPool = shuffle(source.filter(movieHasPlayableVideo));
       
@@ -1058,12 +913,11 @@
       };
 
       heroVideo.muted = true;
-      heroMuteBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="mute-svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path class="speaker" d="M11 5L6 9H2v6h4l5 4V5z" fill="currentColor" stroke="none"></path>          <path class="waves" d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>          <line class="cross" x1="3" y1="3" x2="21" y2="21"></line>        </svg>`;      updateMuteIcon();
+      heroMuteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="mute-svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="speaker" d="M11 5L6 9H2v6h4l5 4V5z" fill="currentColor" stroke="none"></path><path class="waves" d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path><line class="cross" x1="3" y1="3" x2="21" y2="21"></line></svg>`;
+      updateMuteIcon();
     }
 
-    function playHeroMovie(content) { // Renommé 'content' pour film/série
+    function playHeroMovie(content) {
       if(isMoviePlaying) return; 
       heroVideo.src = content.trailerUrl || content.videoUrl;
       heroVideo.muted = true;
@@ -1071,13 +925,12 @@
       updateMuteIcon();
       heroTitle.textContent = content.title;
       heroDesc.textContent = content.description;
-      heroMeta.innerHTML = `<span class="badge">${content.year}</span><span class="badge">${content.duration || 'Série'}</span><span class="badge">${(content.genres||[]).slice(0,3).join(" • ")}</span>`;                        
-      const isSeries = content.type === 'serie';
+      heroMeta.innerHTML = `<span class="badge">${content.year}</span><span class="badge">${content.duration || 'Série'}</span><span class="badge">${(content.genres||'').slice(0,30)}</span>`;
+      
+      const isSeries = !!content.trailerUrl && !content.videoUrl && content.collectionName === 'series'; // Simple check
 
       heroPlayBtn.onclick = () => {
-         // Pour les séries, Play mène à l'overlay (car on ne sait pas quel épisode jouer)
          if (isSeries) { openOverlay(content, true); return; }
-
          const movieUrl = content.videoUrl || content.trailerUrl;
          enterMovieMode(movieUrl, content.id, false);
       };
@@ -1085,7 +938,6 @@
     }
     
     heroMuteBtn.onclick = () => { heroVideo.muted = !heroVideo.muted; updateMuteIcon(); };
-    
     function updateMuteIcon() { 
         if(heroVideo.muted) heroMuteBtn.classList.add('is-muted');
         else heroMuteBtn.classList.remove('is-muted');
@@ -1095,23 +947,19 @@
     const playerOverlay = document.getElementById("playerOverlay");
     const fullPlayer = document.getElementById("fullPlayer");
     
-    // --- VIDEO PLAYER LOGIC ---
     fullPlayer.onended = () => {
-        // On utilise currentMovieId qui peut être un ID d'épisode
         saveWatchProgress(fullPlayer.duration, fullPlayer.duration, true);
         exitPlayer();
     };
 
-    // Nouvelle signature pour gérer l'ID du contenu (film ou épisode) et si c'est un trailer
     async function enterMovieMode(url, contentId, isTrailer = false) {
-        if(!url) return alert("Erreur: Lien vidéo manquant pour ce contenu.");
+        if(!url) return alert("Erreur: Lien vidéo manquant.");
         if(!currentUserData) showToast("Connectez-vous pour sauvegarder");
 
-        // Trouver le contenu pour le titre (peut être film ou épisode)
+        // Find Content
         const currentContent = movies.find(m => m.id === contentId) || episodes.find(e => e.id === contentId) || series.find(s => s.id === contentId);
 
         document.getElementById("playerTitle").innerText = currentContent?.title || "";
-        // Si c'est un épisode, on ajoute le numéro de saison/épisode au titre du player
         if (currentContent && currentContent.seriesId) {
              const parentSeries = series.find(s => s.id === currentContent.seriesId)?.title || "Série";
              document.getElementById("playerTitle").innerText = `${parentSeries} - S${currentContent.season}E${currentContent.episodeOrder}`;
@@ -1130,24 +978,21 @@
         fullPlayer.play();
         
         isMoviePlaying = true;
-        currentMovieId = contentId; // ID du film ou de l'épisode
-        if(isTrailer) return; // Pas de progression pour le trailer
+        currentMovieId = contentId;
+        
+        if(isTrailer) return;
         fullPlayer.onloadedmetadata = () => {
              const contentDuration = fullPlayer.duration;
-             
              clearInterval(saveInterval);
              saveInterval = setInterval(() => {
                 if(!fullPlayer.paused) {
                     const currentTime = fullPlayer.currentTime;
                     const isFinished = currentTime > 0 && contentDuration > 0 && currentTime >= contentDuration * 0.98;
-                    
                     saveWatchProgress(currentTime, contentDuration, isFinished);
-                    
                     if(isFinished) exitPlayer();
                 }
              }, 5000);
         };
-        
         if(fullPlayer.readyState >= 1) fullPlayer.onloadedmetadata();
     }
 
@@ -1159,6 +1004,7 @@
         clearInterval(saveInterval);
         renderAllRows(); 
     };
+
     /* RENDU UI */
     const sectionsContainer = document.getElementById("sectionsContainer");
     
@@ -1168,7 +1014,7 @@
         const isSeriesView = currentView === 'series';
         const contentSource = isSeriesView ? series : movies;
         
-        // 1. REPRISE DE LECTURE
+        // Reprise
         const resumeContent = contentSource.filter(m => {
             if (!isSeriesView) {
                 const progress = userProgress[m.id];
@@ -1183,45 +1029,35 @@
         });
         if(resumeContent.length) sectionsContainer.appendChild(createRowHtml("Reprendre la lecture", resumeContent, true, isSeriesView));
         
-        // 2. MA LISTE
+        // Ma Liste
         const myListContent = contentSource.filter(m => userList.includes(m.id));
         if(myListContent.length) sectionsContainer.appendChild(createRowHtml("Ma Liste", myListContent, false, isSeriesView));
 
-        // 3. CATÉGORIES (Filtrage par tags)
-        getAllCategories().forEach(cat => {
-            // Sécurité : on s'assure que m.tags existe
-            let catContent = contentSource.filter(m => (m.tags || []).includes(cat.key));
+        // Categories
+        builtInCategories.forEach(cat => {
+            let catContent = contentSource.filter(m => (m.tags || '').includes(cat.key));
             const shuffledContent = shuffle(catContent);
-
             if(shuffledContent.length) sectionsContainer.appendChild(createRowHtml(cat.label, shuffledContent, false, isSeriesView));
         });
 
-        // 4. --- NOUVEAU : CATALOGUE COMPLET (Fallback) ---
-        // Cette section s'affiche toujours s'il y a du contenu, même sans tags.
+        // Catalogue complet
         if (contentSource.length > 0) {
-            // On mélange tout le contenu pour varier l'affichage
-            const allContentShuffled = shuffle([...contentSource]); 
-            // On affiche une limite de 20 éléments pour ne pas surcharger, ou tout si vous préférez
-            sectionsContainer.appendChild(createRowHtml("Catalogue Complet", allContentShuffled.slice(0, 20), false, isSeriesView));
+            sectionsContainer.appendChild(createRowHtml("Catalogue Complet", shuffle([...contentSource]).slice(0, 20), false, isSeriesView));
         } else {
-            // Message si vraiment vide
-            sectionsContainer.innerHTML += `<div style="padding:40px; text-align:center; color:#666;">Aucun contenu disponible pour le moment.</div>`;
+            sectionsContainer.innerHTML += `<div style="padding:40px; text-align:center; color:#666;">Aucun contenu disponible.</div>`;
         }
         
-        // Réattacher les événements de clic
         document.querySelectorAll(".movie-card").forEach(card => {
             card.addEventListener("click", () => {
                 const contentFindFn = (id) => isSeriesView 
                     ? series.find(x => x.id === id) 
                     : movies.find(x => x.id === id);
-                
                 const content = contentFindFn(card.dataset.id);
                 if(content) openOverlay(content, isSeriesView);
             });
         });
     }
     
-    // --- NOUVELLE FONCTION: RENDU DES ÉPISODES DANS L'OVERLAY ---
     function renderSeriesEpisodes(seriesId) {
         const seriesEpisodes = episodes.filter(e => e.seriesId === seriesId).sort((a, b) => a.season - b.season || a.episodeOrder - b.episodeOrder);
         
@@ -1231,111 +1067,64 @@
 
         seasons.forEach(seasonNum => {
             const seasonEpisodes = seriesEpisodes.filter(e => e.season === seasonNum);
-            
-            html += `
-                <details open style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
-                    <summary style="font-size: 1.1rem; font-weight: 600; cursor: pointer;">Saison ${seasonNum}</summary>                    <ul style="list-style: none; padding-left: 0; margin-top: 10px;">
-            `;
+            html += `<details open style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                    <summary style="font-size: 1.1rem; font-weight: 600; cursor: pointer;">Saison ${seasonNum}</summary><ul style="list-style: none; padding-left: 0; margin-top: 10px;">`;
             
             seasonEpisodes.forEach(ep => {
                 const progress = userProgress[ep.id] || {time: 0, duration: 0};
                 const isInProgress = progress.time > 10 && !progress.completed;
-                
-                let status = '';
-                if (isInProgress) {
-                    const timeInMin = Math.floor(progress.time / 60);
-                    const percent = Math.floor((progress.time / progress.duration) * 100);
-                    status = `(Reprise à ${timeInMin} min / ${percent}%)`;
-                } else if (progress.completed) {
-                    status = `(Terminé)`;
-                }
+                let status = isInProgress ? `(Reprise)` : (progress.completed ? `(Terminé)` : ``);
 
-                html += `
-                    <li style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); cursor: pointer;" 
+                html += `<li style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); cursor: pointer;" 
                         onclick="closeAllOverlays(); enterMovieMode('${ep.videoUrl}', '${ep.id}', false)">
-                        <span>S${ep.season}E${ep.episodeOrder} - ${ep.title}</span>                        <span style="font-size: 0.8rem; color: ${isInProgress ? 'var(--accent)' : (progress.completed ? '#4ade80' : '#a1a1aa')};">${status} ▶</span>                    </li>                `;
+                        <span>S${ep.season}E${ep.episodeOrder} - ${ep.title}</span><span style="font-size: 0.8rem; color: ${isInProgress ? 'var(--accent)' : '#a1a1aa'};">${status} ▶</span></li>`;
             });
-            
             html += `</ul></details>`;
         });
-
         return html;
     }
-
 
     function createRowHtml(title, contentList, isResumeRow, isSeriesRow = false) {
         const sec = document.createElement("section");
         const cards = contentList.map(m => {
             let extra = "";
             let actionBtnHtml = ""; 
-            let contentId = m.id; // Par défaut, c'est l'ID du film/série
+            let contentId = m.id;
             let itemType = m.title;
 
             if(isResumeRow) {
                 let progressData = {time: 0, duration: 0};
-
                 if (isSeriesRow) {
-                    // SÉRIE: on cherche le dernier épisode regardé de cette série
                     const resumeEpisode = episodes.filter(e => e.seriesId === m.id)
                         .map(e => userProgress[e.id] ? { ...e, progress: userProgress[e.id] } : null)
-                        .filter(e => e && e.progress.time > 10 && !e.progress.completed) // N'affiche que ceux en cours
+                        .filter(e => e && e.progress.time > 10 && !e.progress.completed)
                         .sort((a, b) => b.progress.lastUpdate - a.progress.lastUpdate)[0];
 
                     if (resumeEpisode) {
-                        contentId = resumeEpisode.id; // ID de l'épisode pour la suppression/progression
-                        progressData = resumeEpisode.progress;
+                        contentId = resumeEpisode.id; progressData = resumeEpisode.progress;
                         itemType = `S${resumeEpisode.season}E${resumeEpisode.episodeOrder} - ${m.title}`;
-                    } else {
-                        return ''; 
-                    }
-
+                    } else return '';
                 } else {
-                    // FILM
                     progressData = userProgress[contentId] || {time: 0, duration: 0};
                 }
                 
                 let progressPercent = 0;
-                if(progressData.time > 0 && progressData.duration > 0) {
-                     progressPercent = (progressData.time / progressData.duration) * 100;
-                     if(progressPercent > 99) progressPercent = 99; 
-                }
+                if(progressData.time > 0 && progressData.duration > 0) progressPercent = (progressData.time / progressData.duration) * 100;
                 
                 extra = `<div class="progress-container"><div class="progress-fill" style="width: ${progressPercent}%"></div></div>`;
-                
-                // Bouton de suppression manuelle utilise l'ID du FILM ou de l'ÉPISODE
-                actionBtnHtml = `<button class="card-add-btn remove" 
-                                onclick="event.stopPropagation(); removeFromWatchProgress('${contentId}')"
-                                style="bottom: 8px; right: 10px;" aria-label="Supprimer de la liste de reprise">✕</button>`;
+                actionBtnHtml = `<button class="card-add-btn remove" onclick="event.stopPropagation(); removeFromWatchProgress('${contentId}')">✕</button>`;
             } else {
-                // My List button logic (toujours sur l'ID de l'entité principale : Film ou Série)
                 const isInList = userList.includes(m.id);
-                const isMyListRow = (title === "Ma Liste");
-                let btnClass = "card-add-btn";
-                let btnIcon = "+";
-                let label = "Ajouter à Ma Liste";
-                
-                if(isInList) {
-                    btnClass += " added";
-                    btnIcon = "✓";
-                    label = "Retirer de Ma Liste";
-                    if(isMyListRow) {
-                        btnClass += " remove"; 
-                        btnIcon = "✕"; 
-                        label = "Supprimer de Ma Liste";
-                    }
-                }
-
-                actionBtnHtml = `<button class="${btnClass}" onclick="event.stopPropagation(); toggleMyList('${m.id}')" aria-label="${label}">${btnIcon}</button>`;
+                const btnClass = isInList ? "card-add-btn added" : "card-add-btn";
+                const btnIcon = isInList ? "✓" : "+";
+                actionBtnHtml = `<button class="${btnClass}" onclick="event.stopPropagation(); toggleMyList('${m.id}')">${btnIcon}</button>`;
             }
 
-            return `
-            <div class="movie-card" data-id="${m.id}">
-              <div class="poster-wrapper"><img src="${m.poster}" loading="lazy" alt="${itemType} Affiche" onerror="this.src='https://placehold.co/200x300?text=No+Img'"></div>              ${extra}              ${actionBtnHtml}               <div class="movie-title-mini">${itemType}</div>            </div>`;        }).join("");
-
-        sec.innerHTML = `<div class="section-header"><h3 class="section-title">${title}</h3></div><div class="row-wrapper"><button class="scroll-btn left" onclick="scrollRow(this, -300)" aria-label="Défiler à gauche">‹</button><div class="movie-row">${cards}</div><button class="scroll-btn right" onclick="scrollRow(this, 300)" aria-label="Défiler à droite">›</button></div>`;
+            return `<div class="movie-card" data-id="${m.id}"><div class="poster-wrapper"><img src="${m.poster}" loading="lazy" onerror="this.src='https://placehold.co/200x300?text=Img'"></div>${extra}${actionBtnHtml}<div class="movie-title-mini">${itemType}</div></div>`;
+        }).join("");
+        sec.innerHTML = `<div class="section-header"><h3 class="section-title">${title}</h3></div><div class="row-wrapper"><button class="scroll-btn left" onclick="scrollRow(this, -300)">‹</button><div class="movie-row">${cards}</div><button class="scroll-btn right" onclick="scrollRow(this, 300)">›</button></div>`;
         return sec;
     }
-
 
     window.scrollRow = (btn, amount) => {
       btn.closest('.row-wrapper').querySelector('.movie-row').scrollBy({ left: amount, behavior: 'smooth' });
@@ -1343,197 +1132,110 @@
 
     /* OVERLAYS */
     const overlay = document.getElementById("overlay");
-    // MODIFICATION: openOverlay prend maintenant le type de contenu
     function openOverlay(m, isSeries = false) {
       document.getElementById("overlayPoster").src = m.poster;
-      document.getElementById("overlayPoster").alt = `Affiche de ${m.title}`;
       document.getElementById("overlayTitle").textContent = m.title;
       
       const btnWatchMovie = document.getElementById("overlayWatchMovieBtn");
       const btnWatchTrailer = document.getElementById("overlayWatchTrailerBtn");
-      const overlayActorsEl = document.getElementById("overlayActors");
-      const overlayMetaEl = document.getElementById("overlayMeta");
       const overlayDescEl = document.getElementById("overlayDesc");
       
-      // --- LOGIQUE SPÉCIFIQUE AUX SÉRIES ---
       if (isSeries) {
-          const actorsList = (m.cast || []).join(", ");
-          const genresList = (m.genres || []).join(", ");
-
-          overlayActorsEl.textContent = actorsList;
-          overlayMetaEl.textContent = `${m.year} • Série • ${genresList}`;
-          
-          // Affiche la description et la liste des épisodes en dessous
-          const episodesHtml = renderSeriesEpisodes(m.id);
-          overlayDescEl.innerHTML = `${m.description}<br><br><h3 style="margin-top:20px;">Épisodes</h3><div id="seriesEpisodeContainer">${episodesHtml}</div>`;
-          
+          document.getElementById("overlayActors").textContent = m.cast || '';
+          document.getElementById("overlayMeta").textContent = `${m.year} • Série • ${m.genres || ''}`;
+          overlayDescEl.innerHTML = `${m.description}<br><br><h3 style="margin-top:20px;">Épisodes</h3><div id="seriesEpisodeContainer">${renderSeriesEpisodes(m.id)}</div>`;
           btnWatchMovie.classList.add('hidden'); 
           btnWatchTrailer.textContent = "Voir Trailer Série";
-          
-          btnWatchTrailer.onclick = () => {
-             closeAllOverlays();
-             // Le trailer utilise l'ID de la série
-             enterMovieMode(m.trailerUrl, m.id, true);
-          };
-
+          btnWatchTrailer.onclick = () => { closeAllOverlays(); enterMovieMode(m.trailerUrl, m.id, true); };
       } else {
-          // LOGIQUE FILMS (Ancienne)
-          overlayActorsEl.textContent = (m.cast||[]).join(", ");
-          overlayMetaEl.textContent = `${m.year} • ${m.duration} • ${(m.genres||[]).join(" • ")}`;
+          document.getElementById("overlayActors").textContent = m.cast || '';
+          document.getElementById("overlayMeta").textContent = `${m.year} • ${m.duration} • ${m.genres || ''}`;
           overlayDescEl.innerHTML = m.description;
-
           btnWatchMovie.classList.remove('hidden');
           btnWatchTrailer.textContent = "Voir Trailer";
-
-          btnWatchMovie.onclick = () => {
-             const movieUrl = m.videoUrl || m.trailerUrl;
-             closeAllOverlays();
-             enterMovieMode(movieUrl, m.id, false);
-          };
-          btnWatchTrailer.onclick = () => {
-             const movieUrl = m.trailerUrl || m.videoUrl;
-             closeAllOverlays();
-             enterMovieMode(movieUrl, m.id, true); 
-          };
+          btnWatchMovie.onclick = () => { closeAllOverlays(); enterMovieMode(m.videoUrl || m.trailerUrl, m.id, false); };
+          btnWatchTrailer.onclick = () => { closeAllOverlays(); enterMovieMode(m.trailerUrl || m.videoUrl, m.id, true); };
       }
 
-
       const btnList = document.getElementById("overlayMyListBtn");
-      const isInList = userList.includes(m.id);
-      btnList.textContent = isInList ? "✓ Ma Liste" : "+ Ma Liste";
+      btnList.textContent = userList.includes(m.id) ? "✓ Ma Liste" : "+ Ma Liste";
       btnList.onclick = () => toggleMyList(m.id);
 
       const btnDel = document.getElementById("overlayDeleteBtn");
       const btnEdit = document.getElementById("overlayEditBtn");
       if(isDev) {
         btnDel.classList.remove("hidden"); btnEdit.classList.remove("hidden");
-        // Logique de suppression/modification pour Film ou Série
-        
         btnDel.onclick = async () => { 
-            if(confirm(`Supprimer ${isSeries ? 'cette série' : 'ce film'} ?`)) {
-                const collection = isSeries ? "series" : "movies";
-                if(await db.collection(collection).doc(m.id).delete()) location.reload(); 
+            if(confirm(`Supprimer ?`)) {
+                await pb.collection(isSeries ? "series" : "movies").delete(m.id);
+                location.reload(); 
             }
         }
-        btnEdit.onclick = () => { 
-            closeAllOverlays(); 
-            if (isSeries) { openSeriesAdmin(m); } 
-            else { openAdmin('film', m); } 
-        }
+        btnEdit.onclick = () => { closeAllOverlays(); isSeries ? openSeriesAdmin(m) : openAdmin('film', m); }
       } else { btnDel.classList.add("hidden"); btnEdit.classList.add("hidden"); }
       overlay.classList.remove("overlay-hidden");
     }
 
-    // MISE À JOUR OPTIMISTE (INSTANTANÉE)
     async function toggleMyList(movieId) {
         if(!currentUserData) { showToast("Connectez-vous !"); return; }
-
         const index = userList.indexOf(movieId);
-        let msg = "";
-
-        if(index > -1) {
-            userList.splice(index, 1);
-            msg = "Retiré de la liste";
-        } else {
-            userList.push(movieId);
-            msg = "Ajouté à la liste";
-        }
-
-        showToast(msg);
+        index > -1 ? userList.splice(index, 1) : userList.push(movieId);
+        showToast(index > -1 ? "Retiré" : "Ajouté");
         renderAllRows(); 
-        
-        const btnList = document.getElementById("overlayMyListBtn");
-        if(btnList && !document.getElementById("overlay").classList.contains("overlay-hidden")) {
-             const isIn = userList.includes(movieId);
-             btnList.textContent = isIn ? "✓ Ma Liste" : "+ Ma Liste";
-        }
-
-        try {
-            await db.collection("users").doc(currentUserData.uid).set({ myList: userList }, { merge: true });
-        } catch(e) { console.error("Erreur sauvegarde liste:", e); }
+        try { await pb.collection("users").update(currentUserData.id, { myList: userList }); } catch(e) {}
     }
 
-    function closeAllOverlays() { 
-      document.querySelectorAll(".overlay-backdrop").forEach(el => el.classList.add("overlay-hidden")); 
-    }
+    function closeAllOverlays() { document.querySelectorAll(".overlay-backdrop").forEach(el => el.classList.add("overlay-hidden")); }
     document.querySelectorAll(".overlay-close").forEach(btn => btn.onclick = closeAllOverlays);
 
     /* ADMIN & UI */
-    const adminOverlay = document.getElementById("adminOverlay"), catOverlay = document.getElementById("categoryOverlay"), accountOverlay = document.getElementById("accountOverlay");
-    const adminSeriesOverlay = document.getElementById("adminSeriesOverlay");
-    const adminEpisodeOverlay = document.getElementById("adminEpisodeOverlay");
+    const adminOverlay = document.getElementById("adminOverlay"), accountOverlay = document.getElementById("accountOverlay");
+    const adminSeriesOverlay = document.getElementById("adminSeriesOverlay"), adminEpisodeOverlay = document.getElementById("adminEpisodeOverlay");
     
-    document.getElementById("floatingAdminBtn").onclick = () => {
-        catOverlay.classList.remove("overlay-hidden");
-        renderCatList();
-    };
-
-    // MODIFIE LES GESTIONNAIRES DE BOUTONS ADMIN
+    document.getElementById("floatingAdminBtn").onclick = () => { document.getElementById("categoryOverlay").classList.remove("overlay-hidden"); };
     document.getElementById("addMovieBtn").onclick = () => openAdmin("film");
     document.getElementById("addSeriesBtn").onclick = () => openSeriesAdmin(null);
-    document.getElementById("addCategoryBtn").onclick = () => { catOverlay.classList.remove("overlay-hidden"); renderCatList(); };
+    document.getElementById("addCategoryBtn").onclick = () => { document.getElementById("categoryOverlay").classList.remove("overlay-hidden"); };
     document.getElementById("accountBtn").onclick = () => accountOverlay.classList.remove("overlay-hidden");
 
-    let currentAdminType = "film"; 
-
-    // MODIFICATION DE openAdmin: redirige pour les séries
     function openAdmin(type, contentToEdit = null) {
       if(!isDev) return;
-      currentAdminType = type; 
-
-      if (type === 'serie') {
-          openSeriesAdmin(contentToEdit);
-          return;
-      }
-      
-      // LOGIQUE FILMS (ancienne)
       document.getElementById("adminForm").reset(); document.getElementById("tmdbResults").innerHTML = ""; 
-      
       if(contentToEdit) {
          editingContentId = contentToEdit.id;
          document.getElementById("adminTitle").textContent = "Modifier Film"; 
          document.getElementById("adminCreate").textContent = "Mettre à jour";
-         // Remplissage des champs
          document.getElementById("fieldName").value = contentToEdit.title;
          document.getElementById("fieldYear").value = contentToEdit.year;
          document.getElementById("fieldDuration").value = contentToEdit.duration;
-         document.getElementById("fieldGenres").value = contentToEdit.genres.join(", ");
-         document.getElementById("fieldTags").value = contentToEdit.tags.join(", ");
-         document.getElementById("fieldCast").value = contentToEdit.cast.join(", ");
+         document.getElementById("fieldGenres").value = contentToEdit.genres;
+         document.getElementById("fieldTags").value = contentToEdit.tags;
+         document.getElementById("fieldCast").value = contentToEdit.cast;
          document.getElementById("fieldPoster").value = contentToEdit.poster;
          document.getElementById("fieldTrailer").value = contentToEdit.trailerUrl;
          document.getElementById("fieldMovieUrl").value = contentToEdit.videoUrl;
          document.getElementById("fieldDescription").value = contentToEdit.description;
-
       } else {
-         editingContentId = null; 
-         document.getElementById("adminTitle").textContent = "Ajouter Film"; 
-         document.getElementById("adminCreate").textContent = "Ajouter";
+         editingContentId = null; document.getElementById("adminTitle").textContent = "Ajouter Film"; document.getElementById("adminCreate").textContent = "Ajouter";
       }
       adminOverlay.classList.remove("overlay-hidden");
     }
 
-    // --- NOUVELLES FONCTIONS ADMIN SÉRIES ---
     function openSeriesAdmin(seriesToEdit = null) {
         document.getElementById("adminSeriesForm").reset(); 
         document.getElementById("adminSeriesClose").onclick = closeAllOverlays; 
-
         if(seriesToEdit) {
             editingContentId = seriesToEdit.id;
-            document.getElementById("adminSeriesTitle").textContent = `Modifier Série: ${seriesToEdit.title}`;
-            document.getElementById("adminSeriesCreate").textContent = "Mettre à jour";
-            // Remplissage des champs de série
+            document.getElementById("adminSeriesTitle").textContent = "Modifier Série"; document.getElementById("adminSeriesCreate").textContent = "Mettre à jour";
             document.getElementById("fieldSeriesName").value = seriesToEdit.title;
             document.getElementById("fieldSeriesYear").value = seriesToEdit.year;
-            document.getElementById("fieldSeriesGenres").value = (seriesToEdit.genres || []).join(", ");
-            document.getElementById("fieldSeriesTags").value = (seriesToEdit.tags || []).join(", ");
+            document.getElementById("fieldSeriesGenres").value = seriesToEdit.genres;
+            document.getElementById("fieldSeriesTags").value = seriesToEdit.tags;
             document.getElementById("fieldSeriesPoster").value = seriesToEdit.poster;
             document.getElementById("fieldSeriesTrailer").value = seriesToEdit.trailerUrl;
             document.getElementById("fieldSeriesDescription").value = seriesToEdit.description;
         } else {
-            editingContentId = null;
-            document.getElementById("adminSeriesTitle").textContent = "Ajouter Série";
-            document.getElementById("adminSeriesCreate").textContent = "Ajouter";
+            editingContentId = null; document.getElementById("adminSeriesTitle").textContent = "Ajouter Série"; document.getElementById("adminSeriesCreate").textContent = "Ajouter";
         }
         adminSeriesOverlay.classList.remove("overlay-hidden");
     }
@@ -1541,188 +1243,118 @@
     // Soumission du formulaire Série
     document.getElementById("adminSeriesForm").onsubmit = async (e) => {
         e.preventDefault();
-        const title = document.getElementById("fieldSeriesName").value;
-        const newSeries = {
-            id: editingContentId ? editingContentId : slugify(title) + "-" + Date.now(),
-            type: 'serie',
-            dateAdded: Date.now(),
-            title: title,
+        const data = {
+            title: document.getElementById("fieldSeriesName").value,
             year: parseInt(document.getElementById("fieldSeriesYear").value), 
-            genres: document.getElementById("fieldSeriesGenres").value.split(",").map(s=>s.trim()).filter(Boolean),
-            tags: document.getElementById("fieldSeriesTags").value.split(",").map(s=>s.trim().toLowerCase()).filter(Boolean),
+            genres: document.getElementById("fieldSeriesGenres").value,
+            tags: document.getElementById("fieldSeriesTags").value,
             poster: document.getElementById("fieldSeriesPoster").value, 
             trailerUrl: document.getElementById("fieldSeriesTrailer").value,
             description: document.getElementById("fieldSeriesDescription").value
         };
-        newSeries._searchStr = normalizeText([newSeries.title, ...newSeries.genres, newSeries.year].join(" "));
-
         try {
-            await db.collection("series").doc(newSeries.id).set(newSeries, { merge: true });
-            closeAllOverlays();
-            location.reload();
-        } catch(err) { alert("Erreur sauvegarde série: " + err.message); }
+            if(editingContentId) await pb.collection("series").update(editingContentId, data);
+            else await pb.collection("series").create(data);
+            closeAllOverlays(); location.reload();
+        } catch(err) { alert("Erreur: " + err.message); }
     };
     
-    // Fonction d'Admin pour les Épisodes (à appeler depuis un bouton adminSeriesOverlay ou la console)
     window.openEpisodeAdmin = (seriesId = '', episodeToEdit = null) => {
-        document.getElementById("adminEpisodeForm").reset(); 
-        document.getElementById("fieldEpisodeSeriesId").value = seriesId;
+        document.getElementById("adminEpisodeForm").reset(); document.getElementById("fieldEpisodeSeriesId").value = seriesId;
         document.getElementById("adminEpisodeClose").onclick = closeAllOverlays; 
-
         editingContentId = null; 
         if(episodeToEdit) {
             editingContentId = episodeToEdit.id;
-            document.getElementById("adminEpisodeTitle").textContent = `Modifier Épisode: S${episodeToEdit.season}E${episodeToEdit.episodeOrder}`;
-            // Remplissage des champs d'épisode
+            document.getElementById("adminEpisodeTitle").textContent = "Modifier Épisode";
             document.getElementById("fieldEpisodeSeriesId").value = episodeToEdit.seriesId;
             document.getElementById("fieldEpisodeSeason").value = episodeToEdit.season;
             document.getElementById("fieldEpisodeOrder").value = episodeToEdit.episodeOrder;
             document.getElementById("fieldEpisodeName").value = episodeToEdit.title;
             document.getElementById("fieldEpisodeDuration").value = episodeToEdit.duration;
-            document.getElementById("fieldEpisodeCast").value = (episodeToEdit.cast || []).join(", ");
             document.getElementById("fieldEpisodeDescription").value = episodeToEdit.description;
             document.getElementById("fieldEpisodeUrl").value = episodeToEdit.videoUrl;
-        } else {
-             document.getElementById("adminEpisodeTitle").textContent = "Ajouter Nouvel Épisode";
-        }
-
+        } else document.getElementById("adminEpisodeTitle").textContent = "Ajouter Épisode";
         adminEpisodeOverlay.classList.remove("overlay-hidden");
     };
 
-    // Soumission du formulaire Épisode
     document.getElementById("adminEpisodeForm").onsubmit = async (e) => {
         e.preventDefault();
-        const seriesId = document.getElementById("fieldEpisodeSeriesId").value;
-        const season = parseInt(document.getElementById("fieldEpisodeSeason").value);
-        const order = parseInt(document.getElementById("fieldEpisodeOrder").value);
-        const title = document.getElementById("fieldEpisodeName").value;
-        
-        // Crée un ID unique basé sur la série, saison, et ordre
-        const baseId = slugify(seriesId + "-s" + season + "-e" + order);
-        const episodeId = editingContentId ? editingContentId : baseId + "-" + Date.now();
-
-        const newEpisode = {
-            id: episodeId,
-            seriesId: seriesId,
-            title: title,
-            season: season,
-            episodeOrder: order,
+        const data = {
+            seriesId: document.getElementById("fieldEpisodeSeriesId").value,
+            title: document.getElementById("fieldEpisodeName").value,
+            season: parseInt(document.getElementById("fieldEpisodeSeason").value),
+            episodeOrder: parseInt(document.getElementById("fieldEpisodeOrder").value),
             duration: document.getElementById("fieldEpisodeDuration").value,
-            cast: document.getElementById("fieldEpisodeCast").value.split(",").map(s=>s.trim()).filter(Boolean),
             description: document.getElementById("fieldEpisodeDescription").value,
             videoUrl: document.getElementById("fieldEpisodeUrl").value,
-            dateAdded: Date.now(),
-            type: 'episode' // Ajout du type pour la clarté
         };
-        
         try {
-            await db.collection("episodes").doc(newEpisode.id).set(newEpisode, { merge: true });
-            closeAllOverlays();
-            location.reload();
-        } catch(err) { alert("Erreur sauvegarde épisode: " + err.message); }
+            if(editingContentId) await pb.collection("episodes").update(editingContentId, data);
+            else await pb.collection("episodes").create(data);
+            closeAllOverlays(); location.reload();
+        } catch(err) { alert("Erreur: " + err.message); }
     };
 
-
-    // --- MISE À JOUR: SAUVEGARDE FILM (adminForm onsubmit) ---
     document.getElementById("adminForm").onsubmit = async (e) => {
       e.preventDefault();
-      const title = document.getElementById("fieldName").value;
-      const newMovie = {
-        // Utilise editingContentId
-        id: editingContentId ? editingContentId : slugify(title) + "-" + Date.now(),
-        dateAdded: Date.now(),
-        type: currentAdminType, title: title,
+      const data = {
+        title: document.getElementById("fieldName").value,
         year: parseInt(document.getElementById("fieldYear").value), 
         duration: document.getElementById("fieldDuration").value,
-        genres: document.getElementById("fieldGenres").value.split(",").map(s=>s.trim()).filter(Boolean),
-        tags: document.getElementById("fieldTags").value.split(",").map(s=>s.trim().toLowerCase()).filter(Boolean),
-        cast: document.getElementById("fieldCast").value.split(",").map(s=>s.trim()).filter(Boolean),
+        genres: document.getElementById("fieldGenres").value,
+        tags: document.getElementById("fieldTags").value,
+        cast: document.getElementById("fieldCast").value,
         poster: document.getElementById("fieldPoster").value, 
         trailerUrl: document.getElementById("fieldTrailer").value,
         videoUrl: document.getElementById("fieldMovieUrl").value, 
         description: document.getElementById("fieldDescription").value
       };
-      newMovie._searchStr = normalizeText([newMovie.title, ...newMovie.genres, ...newMovie.cast, newMovie.year].join(" "));
       
-      try {
-          if(await saveMovie(newMovie)) { 
-              closeAllOverlays(); 
-              location.reload(); 
-          }
-      } catch(err) { alert("Erreur sauvegarde film: " + err.message); }
+      try { await saveMovie(data); closeAllOverlays(); location.reload(); } catch(err) { alert("Erreur"); }
     };
     document.getElementById("adminCancel").onclick = closeAllOverlays;
 
-    document.getElementById("categoryForm").onsubmit = async (e) => {
-      e.preventDefault();
-      const k = document.getElementById("catKey").value.toLowerCase().trim();
-      const l = document.getElementById("catLabel").value.trim();
-      if(await saveCategory({ key: k, label: l })) { customCategories.push({ key: k, label: l }); renderCatList(); renderAllRows(); document.getElementById("categoryForm").reset(); }
-    };
-    function renderCatList() {
-      document.getElementById("categoryList").innerHTML = customCategories.map(c => `<div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.8rem;"><span>${c.label} (${c.key})</span><span style="color:red; cursor:pointer;" onclick="removeCat('${c.key}')">Suppr.</span></div>`);
-    }
-
-    window.removeCat = async (k) => {
-      if(!confirm("Supprimer ?")) return;
-      if(await deleteCategory(k)) { customCategories = customCategories.filter(c => c.key !== k); renderCatList(); renderAllRows(); }
-    };
-
-    /* AUTH */
     const tabLogin = document.getElementById("tabLogin"), tabRegister = document.getElementById("tabRegister"), formLogin = document.getElementById("loginForm"), formRegister = document.getElementById("registerForm");
     tabLogin.onclick = () => { tabLogin.classList.replace("btn-ghost", "btn-primary"); tabRegister.classList.replace("btn-primary", "btn-ghost"); formLogin.classList.remove("hidden"); formRegister.classList.add("hidden"); };
     tabRegister.onclick = () => { tabRegister.classList.replace("btn-ghost", "btn-primary"); tabLogin.classList.replace("btn-primary", "btn-ghost"); formRegister.classList.remove("hidden"); formLogin.classList.add("hidden"); };
     
-    formLogin.onsubmit = (e) => { e.preventDefault(); auth.signInWithEmailAndPassword(document.getElementById("loginIdentifier").value.trim(), document.getElementById("loginPassword").value).then(() => { closeAllOverlays(); document.getElementById("loginError").style.display='none'; showToast("Connexion réussie"); }).catch(err => { document.getElementById("loginError").style.display='block'; document.getElementById("loginError").textContent=err.message; }); };
-    formRegister.onsubmit = (e) => { e.preventDefault(); 
+    formLogin.onsubmit = async (e) => { e.preventDefault(); try { await pb.collection("users").authWithPassword(document.getElementById("loginIdentifier").value, document.getElementById("loginPassword").value); closeAllOverlays(); showToast("Connexion réussie"); } catch(err) { document.getElementById("loginError").style.display='block'; } };
+    formRegister.onsubmit = async (e) => { e.preventDefault(); 
       const p1=document.getElementById("registerPassword").value, p2=document.getElementById("registerPassword2").value;
       if(p1!==p2) { document.getElementById("registerError").textContent="Mots de passe différents"; document.getElementById("registerError").style.display="block"; return; }
-      auth.createUserWithEmailAndPassword(document.getElementById("registerIdentifier").value.trim(), p1).then((cred) => {
-          return db.collection("users").doc(cred.user.uid).set({ email: cred.user.email, createdAt: firebase.firestore.FieldValue.serverTimestamp(), myList: [], watchProgress: {} });
-      }).then(() => { closeAllOverlays(); formRegister.reset(); showToast("Compte créé !"); }).catch(err => { document.getElementById("registerError").style.display='block'; document.getElementById("registerError").textContent=err.message; }); 
+      try {
+          await pb.collection("users").create({ email: document.getElementById("registerIdentifier").value, password: p1, passwordConfirm: p2 });
+          await pb.collection("users").authWithPassword(document.getElementById("registerIdentifier").value, p1);
+          closeAllOverlays(); showToast("Compte créé !");
+      } catch(err) { document.getElementById("registerError").style.display='block'; } 
     };
-    document.getElementById("logoutBtn").onclick = () => { auth.signOut().then(() => { closeAllOverlays(); showToast("Déconnecté"); }); };
+    document.getElementById("logoutBtn").onclick = () => { pb.authStore.clear(); closeAllOverlays(); showToast("Déconnecté"); location.reload(); };
 
-    // --- CORRECTION: MISE À JOUR UI ADMIN ---
     function updateAccountUI() {
-      const btn = document.getElementById("accountBtn"), logoutSec = document.getElementById("logoutSection");
-      const userLabel = document.getElementById("currentUserLabel");
+      const btn = document.getElementById("accountBtn"), logoutSec = document.getElementById("logoutSection"), userLabel = document.getElementById("currentUserLabel");
       const floatBtn = document.getElementById("floatingAdminBtn");
       
-      const addMovieBtn = document.getElementById("addMovieBtn");
-      const addSeriesBtn = document.getElementById("addSeriesBtn");
-      const addCategoryBtn = document.getElementById("addCategoryBtn");
-      const addEpisodeBtn = document.getElementById("addEpisodeBtn"); 
-
       if(currentUserData) { 
-        btn.textContent = "Mon Compte"; 
-        userLabel.textContent = currentUserData.email; 
-        logoutSec.classList.remove("hidden"); 
-        formLogin.classList.add("hidden"); 
+        btn.textContent = "Mon Compte"; userLabel.textContent = currentUserData.email; 
+        logoutSec.classList.remove("hidden"); formLogin.classList.add("hidden"); 
       } else { 
-        btn.textContent = "Connexion"; 
-        logoutSec.classList.add("hidden"); 
-        formLogin.classList.remove("hidden"); 
+        btn.textContent = "Connexion"; logoutSec.classList.add("hidden"); formLogin.classList.remove("hidden"); 
       }
       
       if(isDev) {
-          addMovieBtn.classList.remove("hidden");
-          addSeriesBtn.classList.remove("hidden");
-          addCategoryBtn.classList.remove("hidden");
           floatBtn.classList.remove("hidden");
-          // Contrôle la visibilité du bouton Épisode en fonction de la vue
-          if (currentView === 'series') addEpisodeBtn.classList.remove('hidden');
-          else addEpisodeBtn.classList.add('hidden');
+          document.getElementById("addMovieBtn").classList.toggle('hidden', currentView !== 'films');
+          document.getElementById("addSeriesBtn").classList.toggle('hidden', currentView !== 'series');
+          document.getElementById("addCategoryBtn").classList.remove('hidden');
+          document.getElementById("addEpisodeBtn").classList.toggle('hidden', currentView !== 'series');
       } else {
-          addMovieBtn.classList.add("hidden");
-          addSeriesBtn.classList.add("hidden");
-          addCategoryBtn.classList.add("hidden");
-          addEpisodeBtn.classList.add("hidden");
+          document.getElementById("addMovieBtn").classList.add("hidden");
+          document.getElementById("addSeriesBtn").classList.add("hidden");
+          document.getElementById("addCategoryBtn").classList.add("hidden");
+          document.getElementById("addEpisodeBtn").classList.add("hidden");
           floatBtn.classList.add("hidden");
       }
     }
-
+    
     document.addEventListener("DOMContentLoaded", initApp);
-  </script>
-</body>
-</html>
+  </script></body></html>
